@@ -1,0 +1,40 @@
+db:
+  #image: postgis
+  build: ../docker-postgis
+  hostname: db
+  environment:
+    - USERNAME=docker
+    - PASS=docker
+    - HSTORE=true
+  # TODO: Why are exposing ports to the host? This is
+  # TODO: an anti-pattern - TS
+  ports:
+    - "6543:5432"
+    
+imposm:
+  #image: imposm
+  build: ../docker-imposm3
+  volumes:
+    - ./base-pbf:/home/base-pbf
+    - ./import-done:/home/import-done
+    - ./import-queue:/home/import-queue
+    - ./settings:/home/settings
+    - ./cache:/home/cache
+  links:
+    - db:db
+  environment:
+    - user=docker
+    - password=docker
+    - port=5432
+    - host=db
+    - dbname=gis
+    
+osmupdate:
+  #image: osmupdate
+  build: ../docker-osmupdate
+  volumes:
+    - ./base-pbf:/home/base-pbf
+    - ./import-done:/home/import-done
+    - ./import-queue:/home/import-queue
+    - ./settings:/home/settings
+    
