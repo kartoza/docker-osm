@@ -6,10 +6,6 @@ db:
     - USERNAME=docker
     - PASS=docker
     - HSTORE=true
-  # TODO: Why are exposing ports to the host? This is
-  # TODO: an anti-pattern - TS
-  ports:
-    - "6543:5432"
     
 imposm:
   #image: imposm
