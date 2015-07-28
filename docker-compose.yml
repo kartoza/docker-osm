@@ -1,3 +1,10 @@
+storage:
+  build: osm-storage
+  hostname: storage
+  volumes:
+    - ../docker-osmupdate/base_pbf:/home/base_pbf
+    - ./settings:/home/settings
+
 db:
   #image: postgis
   build: ../docker-postgis
@@ -6,31 +13,23 @@ db:
     - USERNAME=docker
     - PASS=docker
     - HSTORE=true
-    
+
 imposm:
   #image: imposm
   build: ../docker-imposm3
-  volumes:
-    - ./base-pbf:/home/base-pbf
-    - ./import-done:/home/import-done
-    - ./import-queue:/home/import-queue
-    - ./settings:/home/settings
-    - ./cache:/home/cache
+  volumes_from:
+    - storage
   links:
     - db:db
   environment:
-    - user=docker
-    - password=docker
-    - port=5432
-    - host=db
-    - dbname=gis
-    
+    - USER=docker
+    - PASSWORD=docker
+    - PORT=5432
+    - HOST=db
+    - DATEBASE=gis
+
 osmupdate:
   #image: osmupdate
   build: ../docker-osmupdate
-  volumes:
-    - ./base-pbf:/home/base-pbf
-    - ./import-done:/home/import-done
-    - ./import-queue:/home/import-queue
-    - ./settings:/home/settings
-    
+  volumes_from:
+    - storage
