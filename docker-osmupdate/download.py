@@ -119,4 +119,4 @@ while True:
 
     # Sleep
     print 'Sleeping for %s seconds.' % default['TIME']
-    sleep(default['TIME'])
+    sleep(float(default['TIME']))
