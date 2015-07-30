@@ -1,0 +1,24 @@
+FROM golang:1.4
+MAINTAINER Etienne Trimaille <etienne@kartoza.com>
+
+RUN apt-get update && apt-get install -y python-pip \
+      libprotobuf-dev libleveldb-dev libgeos-dev \
+      libpq-dev python-dev \
+      --no-install-recommends
+
+RUN ln -s /usr/lib/libgeos_c.so /usr/lib/libgeos.so
+
+VOLUME ['/home/base_pbf', '/home/import_done', '/home/import_queue', '/home/cache]
+
+WORKDIR $GOPATH
+RUN go get github.com/tools/godep
+RUN git clone https://github.com/omniscale/imposm3 src/github.com/omniscale/imposm3
+RUN cd src/github.com/omniscale/imposm3 && godep go install ./...
+
+ADD requirements.txt /home/requirements.txt
+RUN pip install -r /home/requirements.txt
+
+ADD importer.py /home/
+
+WORKDIR /home
+CMD ["python", "-u", "/home/importer.py"]
