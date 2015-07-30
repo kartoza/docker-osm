@@ -1,0 +1,1 @@
+This folder should contain a json file for the mapping. You can also put a SQL file, it will be executed after the PBF import.
