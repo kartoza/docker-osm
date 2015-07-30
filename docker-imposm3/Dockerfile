@@ -8,8 +8,6 @@ RUN apt-get update && apt-get install -y python-pip \
 
 RUN ln -s /usr/lib/libgeos_c.so /usr/lib/libgeos.so
 
-VOLUME ['/home/base_pbf', '/home/import_done', '/home/import_queue', '/home/cache]
-
 WORKDIR $GOPATH
 RUN go get github.com/tools/godep
 RUN git clone https://github.com/omniscale/imposm3 src/github.com/omniscale/imposm3
