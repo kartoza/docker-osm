@@ -1,5 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+"""
+/***************************************************************************
+                              Docker-OSM
+                    An ImpOSM database up-to-date.
+                        -------------------
+        begin                : 2015-07-15
+        email                : etienne at kartoza dot com
+        contributor          : Etienne Trimaille
+ ***************************************************************************/
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 
 from os.path import exists, join, isabs, abspath
 from os import listdir, environ
@@ -8,6 +26,9 @@ from subprocess import call
 from datetime import datetime
 from time import sleep
 from sys import stderr
+
+# In docker-compose, we should wait for the DB is ready.
+sleep(45)
 
 # Default values which can be overwritten.
 default = {
