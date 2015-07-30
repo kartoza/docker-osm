@@ -18,7 +18,8 @@ db:
     # - HSTORE=true
 
 imposm:
-  image: kartoza/imposm
+  #image: kartoza/imposm
+  build: docker-imposm3
   volumes_from:
     - storage
   links:
@@ -33,7 +34,8 @@ imposm:
     - TIME=120
 
 osmupdate:
-  image: etrimaille/osmupdate
+  #image: etrimaille/osmupdate
+  build: docker-osmupdate
   volumes_from:
     - storage
   environment:
