@@ -6,9 +6,9 @@ storage:
     - ./settings:/home/settings
 
 db:
-  #image: etrimaille/postgis
+  image: etrimaille/postgis
   #image: kartoza/postgis
-  build: ../docker-postgis
+  #build: ../docker-postgis
   hostname: db
   environment:
     - USERNAME=docker
@@ -16,8 +16,8 @@ db:
     # - HSTORE=true
 
 imposm:
-  #image: etrimaille/imposm
-  build: ../docker-imposm3
+  image: etrimaille/imposm
+  #build: ../docker-imposm3
   volumes_from:
     - storage
   links:
@@ -31,8 +31,8 @@ imposm:
     - TIME=120
 
 osmupdate:
-  #image: etrimaille/osmupdate
-  build: ../docker-osmupdate
+  image: etrimaille/osmupdate
+  #build: ../docker-osmupdate
   volumes_from:
     - storage
   environment:
