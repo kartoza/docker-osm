@@ -10,6 +10,7 @@ from sys import stderr
 # In docker-compose, we should wait the DB is ready.
 sleep(30)
 
+# All these default values can be overwritten by env vars
 default = {
     'TIME': 120,
     'USER': 'docker',
@@ -19,7 +20,7 @@ default = {
     'PORT': '5432',
     'SETTINGS': 'settings',
     'CACHE': 'cache',
-    'BASE_PBF': 'base_pbf',
+    'OSM_PBF': 'osm_pbf',
     'IMPORT_DONE': 'import_done',
     'IMPORT_QUEUE': 'import_queue',
     'SRID': '4326',
@@ -60,7 +61,7 @@ postgis_uri = 'postgis://%s:%s@%s/%s' % (
     default['DATABASE'])
 
 # Check folders.
-folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'BASE_PBF', 'SETTINGS', 'CACHE']
+folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'OSM_PBF', 'SETTINGS', 'CACHE']
 for folder in folders:
     if not isabs(default[folder]):
         # Get the absolute path.
@@ -76,19 +77,19 @@ state_file = None
 osm_file = None
 mapping_file = None
 post_import_file = None
-for f in listdir(default['BASE_PBF']):
+for f in listdir(default['OSM_PBF']):
     if f.endswith('.state.txt'):
-        state_file = join(default['BASE_PBF'], f)
+        state_file = join(default['OSM_PBF'], f)
 
     if f.endswith('.osm.pbf'):
-        osm_file = join(default['BASE_PBF'], f)
+        osm_file = join(default['OSM_PBF'], f)
 
 if not osm_file:
-    print >> stderr, 'OSM file *.pbf is missing in %s' % default['BASE_PBF']
+    print >> stderr, 'OSM file *.pbf is missing in %s' % default['OSM_PBF']
     exit()
 
 if not state_file:
-    print >> stderr, 'State file *.state.txt is missing in %s' % default['BASE_PBF']
+    print >> stderr, 'State file *.state.txt is missing in %s' % default['OSM_PBF']
     exit()
 
 for f in listdir(default['SETTINGS']):

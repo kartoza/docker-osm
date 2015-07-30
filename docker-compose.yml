@@ -1,14 +1,16 @@
 storage:
-  build: osm-storage
+  image: ubuntu:latest
   hostname: storage
   volumes:
-    - ../docker-osmupdate/base_pbf:/home/base_pbf
+    # These are sharable to other containers
+    - ./osm_pbf:/home/osm_pbf
     - ./settings:/home/settings
+    - /home/import_done
+    - /home/import_queue
+    - /home/cache
 
 db:
-  image: etrimaille/postgis
-  #image: kartoza/postgis
-  #build: ../docker-postgis
+  image: kartoza/postgis
   hostname: db
   environment:
     - USERNAME=docker
@@ -16,8 +18,8 @@ db:
     # - HSTORE=true
 
 imposm:
-  image: etrimaille/imposm
-  #build: ../docker-imposm3
+  #image: kartoza/imposm
+  build: docker-imposm3
   volumes_from:
     - storage
   links:
@@ -28,12 +30,14 @@ imposm:
     - PORT=5432
     - HOST=db
     - DATEBASE=gis
+    # in seconds
     - TIME=120
 
 osmupdate:
-  image: etrimaille/osmupdate
-  #build: ../docker-osmupdate
+  #image: etrimaille/osmupdate
+  build: docker-osmupdate
   volumes_from:
     - storage
   environment:
+    # in seconds
     - TIME=120
