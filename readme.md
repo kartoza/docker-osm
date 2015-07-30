@@ -26,7 +26,7 @@ your own country or region here.
 mkdir osm
 cd osm
 wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
-wget -c http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
+wget -c -O country.state.txt http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
 ```
 
 
