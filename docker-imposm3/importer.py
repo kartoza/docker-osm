@@ -1,3 +1,24 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+"""
+/***************************************************************************
+                              Docker-OSM
+                    An ImpOSM database up-to-date.
+                        -------------------
+        begin                : 2015-07-15
+        email                : etienne at kartoza dot com
+        contributor          : Etienne Trimaille
+ ***************************************************************************/
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
+
 from sys import exit
 from os import environ, listdir
 from shutil import move
@@ -7,8 +28,8 @@ from subprocess import call
 from time import sleep
 from sys import stderr
 
-# In docker-compose, we should wait the DB is ready.
-sleep(30)
+# In docker-compose, we should wait for the DB is ready.
+sleep(45)
 
 # All these default values can be overwritten by env vars
 default = {
@@ -81,7 +102,7 @@ for f in listdir(default['OSM_PBF']):
     if f.endswith('.state.txt'):
         state_file = join(default['OSM_PBF'], f)
 
-    if f.endswith('.osm.pbf'):
+    if f.endswith('.pbf'):
         osm_file = join(default['OSM_PBF'], f)
 
 if not osm_file:
