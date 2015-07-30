@@ -1,0 +1,1 @@
+This folder should contain a *.pbf and *.state.txt.
