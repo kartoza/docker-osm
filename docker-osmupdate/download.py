@@ -67,7 +67,7 @@ for f in listdir(default['OSM_PBF']):
     if f.endswith('.state.txt'):
         state_file = join(default['OSM_PBF'], f)
 
-    if f.endswith('.osm.pbf'):
+    if f.endswith('.pbf'):
         osm_file = join(default['OSM_PBF'], f)
 
     if f.endswith('.poly'):

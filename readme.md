@@ -9,10 +9,10 @@ I will write the example as generically as possible so that you can substitute
 your own country or region here.
 
 ```
-mkdir osm
-cd osm
+cd osm_pbf
 wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
 wget -c -O country.state.txt http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
+wget -c -O polygon.poly http://download.geofabrik.de/africa/south-africa-and-lesotho.poly
 ```
 
 ```
