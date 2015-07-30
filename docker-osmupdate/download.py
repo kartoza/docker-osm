@@ -18,7 +18,7 @@ default = {
     'BASE_URL': 'http://planet.openstreetmap.org/replication/',
     'IMPORT_QUEUE': 'import_queue',
     'IMPORT_DONE': 'import_done',
-    'BASE_PBF': 'base_pbf',
+    'OSM_PBF': 'osm_pbf',
     'TIME': 120,
 }
 
@@ -27,7 +27,7 @@ for key in default.keys():
         default[key] = environ[key]
 
 # Folders
-folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'BASE_PBF']
+folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'OSM_PBF']
 for folder in folders:
     if not isabs(default[folder]):
         # Get the absolute path.
@@ -42,26 +42,26 @@ for folder in folders:
 state_file = None
 osm_file = None
 poly_file = None
-for f in listdir(default['BASE_PBF']):
+for f in listdir(default['OSM_PBF']):
     if f.endswith('.state.txt'):
-        state_file = join(default['BASE_PBF'], f)
+        state_file = join(default['OSM_PBF'], f)
 
     if f.endswith('.osm.pbf'):
-        osm_file = join(default['BASE_PBF'], f)
+        osm_file = join(default['OSM_PBF'], f)
 
     if f.endswith('.poly'):
-        poly_file = join(default['BASE_PBF'], f)
+        poly_file = join(default['OSM_PBF'], f)
 
 if not state_file:
-    print >> stderr, 'State file *.state.txt is missing in %s' % default['BASE_PBF']
+    print >> stderr, 'State file *.state.txt is missing in %s' % default['OSM_PBF']
     exit()
 
 if not osm_file:
-    print >> stderr, 'OSM file *.osm.pbf is missing in %s' % default['BASE_PBF']
+    print >> stderr, 'OSM file *.osm.pbf is missing in %s' % default['OSM_PBF']
     exit()
 
 if not poly_file:
-    print 'No *.poly detected in %s' % default['BASE_PBF']
+    print 'No *.poly detected in %s' % default['OSM_PBF']
 else:
     print '%s detected for clipping.' % poly_file
 
