@@ -2,3 +2,4 @@
 *.*~
 osm_pbf/*.pbf
 osm_pbf/*.state.txt
+settings/last.state.txt

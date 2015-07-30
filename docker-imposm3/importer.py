@@ -163,4 +163,4 @@ while True:
 
     if len(listdir(default['IMPORT_QUEUE'])) == 0:
         print 'Sleeping for %s seconds.' % default['TIME']
-        sleep(default['TIME'])
+        sleep(float(default['TIME']))
