@@ -144,7 +144,10 @@ while True:
 
     if call(command) != 0:
         print >> stderr, 'An error occured in osmupdate.'
-
-    # Sleep
-    print 'Sleeping for %s seconds.' % default['TIME']
-    sleep(float(default['TIME']))
+        # Sleep less.
+        print 'Sleeping for 2 seconds.'
+        sleep(2.0)
+    else:
+        # Everything was fine, let's sleeping.
+        print 'Sleeping for %s seconds.' % default['TIME']
+        sleep(float(default['TIME']))
