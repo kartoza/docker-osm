@@ -128,8 +128,8 @@ This application was designed and implemented by:
 * Etienne Trimaille (etienne@kartoza.com)
 * Tim Sutton (tim@kartoza.com)
 
-With some important design ideas provided by Ariel Nunez (ingenieroariel@gmail.com)
+With some important design ideas provided by Ariel Nunez (ingenieroariel@gmail.com).
 
 Parts of this project are built on the existing work of others.
 
-July 2014
+July 2015
