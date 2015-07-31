@@ -15,6 +15,8 @@ db:
     - USERNAME=docker
     - PASS=docker
     # - HSTORE=true
+  ports:
+    - 5432:5432
 
 imposm:
   #image: kartoza/imposm
@@ -29,8 +31,29 @@ imposm:
     - PORT=5432
     - HOST=db
     - DATEBASE=gis
-    # in seconds
+    # seconds between 2 executions of the script
     - TIME=120
+    # folder for settings (with *.json and *.sql)
+    - SETTINGS = settings
+    # folder for caching
+    - CACHE = cache
+    # folder the OSM file
+    - BASE_PBF = base_pbf
+    # folder for diff which has been imported
+    - IMPORT_DONE = import_done
+    # folder for diff which hasn't been imported yet
+    - IMPORT_QUEUE = import_queue
+    # it can be 3857
+    - SRID = 4326
+    # see http://imposm.org/docs/imposm3/latest/tutorial.html#optimize
+    - OPTIMIZE = false
+    # see http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+    - DBSCHEMA_PRODUCTION = public
+    # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+    - DBSCHEMA_IMPORT = import
+    # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+    - DBSCHEMA_BACKUP = backup
+
 
 osmupdate:
   #image: etrimaille/osmupdate
@@ -38,5 +61,19 @@ osmupdate:
   volumes_from:
     - storage
   environment:
-    # in seconds
-    - TIME=120
+    # These are all currently the defaults but listed here for your
+    # convenience if you want to change them
+    # the maximum time range to assamble a cumulated changefile.
+    - MAX_DAYS = 100
+    # osmupdate uses a combination of minutely, hourly and daily changefiles. This value can be minute, hour, day or sporadic.
+    - DIFF = sporadic
+    # argument to determine the maximum number of parallely processed changefiles.
+    - MAX_MERGE = 7
+    # define level for gzip compression. values between 1 (low compression but fast) and 9 (high compression but slow)
+    - COMPRESSION_LEVEL = 1
+    # change the URL to use a custom URL to fetch regional file updates.
+    - BASE_URL = http://planet.openstreetmap.org/replication/
+    - IMPORT_QUEUE = import_queue
+    - IMPORT_DONE = import_done
+    - OSM_PBF = osm_pbf
+    - TIME = 120, seconds between each execution of the script

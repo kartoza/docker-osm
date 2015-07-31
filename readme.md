@@ -1,32 +1,31 @@
 #Docker-OSM
+
 ## Usage
 
 In this example we will set up an OSM database for South Africa that 
 will pull for updates every 2 minutes.
 
-First fetch the latest South Africa osm binary dump file (.pbf) and state file.
-I will write the example as generically as possible so that you can substitute
-your own country or region here.
-
-```
-cd osm_pbf
-wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
-wget -c -O country.state.txt http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
-wget -c -O polygon.poly http://download.geofabrik.de/africa/south-africa-and-lesotho.poly
-```
-
-or you can use the PBF downloader using Geofabrik.
-To get the list of available countries in Geofabrik :
+First get the list of available countries in Geofabrik :
 ``python pbf_downloader.py list``
+
+Now fetch the latest South Africa osm binary dump file (.pbf) and state files:
 
 You can download a country or a continent :
 ``python pbf_downloader.py south-africa-and-lesotho``
 
 The script will download the PBF file, the state file and the polygon for clipping.
 
+Now build the docker images needed to run the application:
+
 ```
 docker-compose build
 docker-compose up
+```
+
+In production you should daemonize the services when bringing them up:
+
+```
+docker-compose up -d
 ```
 
 ## Docker OSM Update
@@ -69,13 +68,16 @@ With -e, you can add some settings :
  - IMPORT_QUEUE = import_queue
  - IMPORT_DONE = import_done
  - OSM_PBF = osm_pbf
- - TIME = 120, secondes between two executions of the script
+ - TIME = 120, seconds between two executions of the script
+
+If you are using docker-compose, you can use these settings within the 
+```docker-compose.yml``` file.
 
 ## Docker ImpOSM3
 
 This image will take care of doing the initial load for the selected region
 (e.g. planet, or a country such as Malawi) into your database. It will then
-apply at a regulart interval (default is 2 minutes) any diff that arrives
+apply, at a regular interval (default is 2 minutes), any diff that arrives
 in the /home/import_queue folder to the postgis OSM database. The diffs
 are fetched by a separate container (see osm_update container).
 
@@ -98,3 +100,19 @@ With -e, you can add some settings :
  - DBSCHEMA_PRODUCTION = public, check (Imposm)[http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables]
  - DBSCHEMA_IMPORT = import, check (Imposm)[http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables]
  - DBSCHEMA_BACKUP = backup, check (Imposm)[http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables]
+
+You can adjust these preferences in the ```docker-compose.yml``` file provided
+in this repository.
+
+# Credits
+
+This application was designed and implemented by:
+
+* Etienne Trimaille (etienne@kartoza.com)
+* Tim Sutton (tim@kartoza.com)
+
+With some important design ideas provided by Ariel Nunez (ingenieroariel@gmail.com)
+
+Parts of this project are built on the existing work of others.
+
+July 2014
