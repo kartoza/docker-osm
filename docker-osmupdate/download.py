@@ -19,7 +19,7 @@
  ***************************************************************************/
 """
 
-from os.path import exists, join, isabs, abspath
+from os.path import exists, join, isabs, abspath, isfile
 from os import listdir, environ
 from sys import exit
 from subprocess import call
@@ -72,6 +72,13 @@ for f in listdir(default['SETTINGS']):
 
     if f.endswith('.poly'):
         poly_file = join(default['SETTINGS'], f)
+
+    """
+    # Todo : need fix custom URL and sporadic diff : daily, hourly and minutely
+    if f == 'custom_url_diff.txt':
+        with open(join(default['SETTINGS'], f), 'r') as content_file:
+            default['BASE_URL'] = content_file.read()
+    """
 
 if not state_file:
     print >> stderr, 'State file *.state.txt is missing in %s' % default['SETTINGS']

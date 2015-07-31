@@ -37,7 +37,7 @@ if url:
     state = diff + 'state.txt'
     print 'Polygon file : ' + poly_file
     print 'PBF file : ' + pbf_file
-    print 'Diff (not used): ' + diff
+    print 'Diff URL : ' + diff
     print 'state : ' + state
 
     print 'Downloading PBF'
@@ -51,6 +51,10 @@ if url:
     print 'Downloading state'
     commands = ['wget', '-c', '-O', 'settings/country.state.txt', state]
     call(commands)
+
+    print 'Setting custom URL diff'
+    with open('settings/custom_url_diff.txt', 'w') as f:
+        f.write(diff)
 
 else:
     print 'This area is unkown in geofabrik or in our script. Check with the list argument.'

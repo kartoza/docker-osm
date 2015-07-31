@@ -4,3 +4,4 @@ settings/*.pbf
 settings/*.state.txt
 settings/*.poly
 settings/last.state.txt
+settings/custom_url_diff.txt
