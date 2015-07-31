@@ -15,6 +15,23 @@ You can download a country or a continent :
 
 The script will download the PBF file, the state file and the polygon for clipping.
 
+As an alternative to the above (not all countries are available from geofabrik), you
+can also fetch the pbf from another site such as shown in the example below which 
+will fetch the latest South Africa osm binary dump file (.pbf) and state file from 
+the French openstreetmap site. Note that you need the ```wget``` command line
+application installed on your computer to follow the instructions below.
+
+```
+cd settings
+wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
+wget -c -O country.state.txt http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
+wget -c -O polygon.poly http://download.geofabrik.de/africa/south-africa-and-lesotho.poly
+```
+
+You can also visit the http://download.openstreetmap.fr/extracts/ site and 
+download the extract you want manually using your browser.
+
+
 Now build the docker images needed to run the application:
 
 ```
