@@ -3,7 +3,6 @@ storage:
   hostname: storage
   volumes:
     # These are sharable to other containers
-    - ./osm_pbf:/home/osm_pbf
     - ./settings:/home/settings
     - /home/import_done
     - /home/import_queue

@@ -41,7 +41,6 @@ default = {
     'PORT': '5432',
     'SETTINGS': 'settings',
     'CACHE': 'cache',
-    'OSM_PBF': 'osm_pbf',
     'IMPORT_DONE': 'import_done',
     'IMPORT_QUEUE': 'import_queue',
     'SRID': '4326',
@@ -52,7 +51,6 @@ default = {
 }
 
 # Check if we overwrite default values.
-# env = [var.lower() for var in environ]
 for key in default.keys():
     if key in environ:
         default[key] = environ[key]
@@ -82,7 +80,7 @@ postgis_uri = 'postgis://%s:%s@%s/%s' % (
     default['DATABASE'])
 
 # Check folders.
-folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'OSM_PBF', 'SETTINGS', 'CACHE']
+folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'SETTINGS', 'CACHE']
 for folder in folders:
     if not isabs(default[folder]):
         # Get the absolute path.
@@ -98,27 +96,26 @@ state_file = None
 osm_file = None
 mapping_file = None
 post_import_file = None
-for f in listdir(default['OSM_PBF']):
+for f in listdir(default['SETTINGS']):
     if f.endswith('.state.txt'):
-        state_file = join(default['OSM_PBF'], f)
+        state_file = join(default['SETTINGS'], f)
 
     if f.endswith('.pbf'):
-        osm_file = join(default['OSM_PBF'], f)
+        osm_file = join(default['SETTINGS'], f)
 
-if not osm_file:
-    print >> stderr, 'OSM file *.pbf is missing in %s' % default['OSM_PBF']
-    exit()
-
-if not state_file:
-    print >> stderr, 'State file *.state.txt is missing in %s' % default['OSM_PBF']
-    exit()
-
-for f in listdir(default['SETTINGS']):
     if f.endswith('.json'):
         mapping_file = join(default['SETTINGS'], f)
 
     if f.endswith('.sql'):
         post_import_file = join(default['SETTINGS'], f)
+
+if not osm_file:
+    print >> stderr, 'OSM file *.pbf is missing in %s' % default['SETTINGS']
+    exit()
+
+if not state_file:
+    print >> stderr, 'State file *.state.txt is missing in %s' % default['SETTINGS']
+    exit()
 
 if not mapping_file:
     print >> stderr, 'Mapping file *.json is missing in %s' % default['SETTINGS']

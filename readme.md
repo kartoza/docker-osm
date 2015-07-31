@@ -2,7 +2,7 @@
 ## Usage
 
 In this example we will set up an OSM database for South Africa that 
-will poll for updates every hour.
+will pull for updates every 2 minutes.
 
 First fetch the latest South Africa osm binary dump file (.pbf) and state file.
 I will write the example as generically as possible so that you can substitute
@@ -14,6 +14,15 @@ wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_af
 wget -c -O country.state.txt http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
 wget -c -O polygon.poly http://download.geofabrik.de/africa/south-africa-and-lesotho.poly
 ```
+
+or you can use the PBF downloader using Geofabrik.
+To get the list of available countries in Geofabrik :
+``python pbf_downloader.py list``
+
+You can download a country or a continent :
+``python pbf_downloader.py south-africa-and-lesotho``
+
+The script will download the PBF file, the state file and the polygon for clipping.
 
 ```
 docker-compose build
