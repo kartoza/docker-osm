@@ -41,15 +41,15 @@ if url:
     print 'state : ' + state
 
     print 'Downloading PBF'
-    commands = ['wget', '-c', '-O', 'osm_pbf/country.pbf', pbf_file]
+    commands = ['wget', '-c', '-O', 'settings/country.pbf', pbf_file]
     call(commands)
 
     print 'Downloading polygon'
-    commands = ['wget', '-c', '-O', 'osm_pbf/country.poly', poly_file]
+    commands = ['wget', '-c', '-O', 'settings/country.poly', poly_file]
     call(commands)
 
     print 'Downloading state'
-    commands = ['wget', '-c', '-O', 'osm_pbf/country.state.txt', state]
+    commands = ['wget', '-c', '-O', 'settings/country.state.txt', state]
     call(commands)
 
 else:

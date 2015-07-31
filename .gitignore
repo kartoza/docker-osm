@@ -1,6 +1,6 @@
 .idea
 *.*~
-osm_pbf/*.pbf
-osm_pbf/*.state.txt
-osm_pbf/*.poly
+settings/*.pbf
+settings/*.state.txt
+settings/*.poly
 settings/last.state.txt
