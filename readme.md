@@ -121,6 +121,9 @@ With -e, you can add some settings :
 You can adjust these preferences in the ```docker-compose.yml``` file provided
 in this repository.
 
+# Technical architecture
+![Lucidchart](https://www.lucidchart.com/publicSegments/view/55bca772-7b94-4589-b0f5-3e9c0a005a39/image.png)
+
 # Credits
 
 This application was designed and implemented by:
