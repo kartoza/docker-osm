@@ -1,4 +1,4 @@
-FROM golang:1.4
+FROM golang:1.5
 MAINTAINER Etienne Trimaille <etienne@kartoza.com>
 
 RUN apt-get update && apt-get install -y python-pip \
