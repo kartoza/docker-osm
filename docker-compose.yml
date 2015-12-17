@@ -14,9 +14,6 @@ db:
   environment:
     - USERNAME=docker
     - PASS=docker
-    # - HSTORE=true
-  ports:
-    - 5432:5432
 
 imposm:
   #image: kartoza/imposm
