@@ -7,16 +7,16 @@ storage:
     - /home/import_done
     - /home/import_queue
     - /home/cache
+    #- ./import_done:/home/import_done
+    #- ./import_queue:/home/import_queue
+    #- ./cache:/home/cache
 
 db:
-  image: kartoza/postgis
+  image: kartoza/postgis:9.4-2.1
   hostname: db
   environment:
     - USERNAME=docker
     - PASS=docker
-    # - HSTORE=true
-  ports:
-    - 5432:5432
 
 imposm:
   #image: kartoza/imposm
@@ -37,8 +37,6 @@ imposm:
     - SETTINGS = settings
     # folder for caching
     - CACHE = cache
-    # folder the OSM file
-    - BASE_PBF = base_pbf
     # folder for diff which has been imported
     - IMPORT_DONE = import_done
     # folder for diff which hasn't been imported yet
@@ -56,7 +54,6 @@ imposm:
 
 
 osmupdate:
-  #image: etrimaille/osmupdate
   build: docker-osmupdate
   volumes_from:
     - storage
@@ -73,7 +70,9 @@ osmupdate:
     - COMPRESSION_LEVEL = 1
     # change the URL to use a custom URL to fetch regional file updates.
     - BASE_URL = http://planet.openstreetmap.org/replication/
+    # folder for diff which hasn't been imported yet
     - IMPORT_QUEUE = import_queue
+    # folder for diff which has been imported
     - IMPORT_DONE = import_done
-    - OSM_PBF = osm_pbf
-    - TIME = 120, seconds between each execution of the script
+    # seconds between 2 executions of the script
+    - TIME = 120

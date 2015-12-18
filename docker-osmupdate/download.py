@@ -19,7 +19,7 @@
  ***************************************************************************/
 """
 
-from os.path import exists, join, isabs, abspath, isfile
+from os.path import exists, join, isabs, abspath
 from os import listdir, environ
 from sys import exit
 from subprocess import call
@@ -28,6 +28,7 @@ from time import sleep
 from sys import stderr
 
 # In docker-compose, we should wait for the DB is ready.
+print 'The container will start soon, after the database.'
 sleep(45)
 
 # Default values which can be overwritten.
@@ -64,7 +65,7 @@ state_file = None
 osm_file = None
 poly_file = None
 for f in listdir(default['SETTINGS']):
-    if f.endswith('.state.txt'):
+    if f == 'last.state.txt':
         state_file = join(default['SETTINGS'], f)
 
     if f.endswith('.pbf'):
@@ -81,7 +82,7 @@ for f in listdir(default['SETTINGS']):
     """
 
 if not state_file:
-    print >> stderr, 'State file *.state.txt is missing in %s' % default['SETTINGS']
+    print >> stderr, 'State file last.state.txt is missing in %s' % default['SETTINGS']
     exit()
 
 if not osm_file:
@@ -93,22 +94,22 @@ if not poly_file:
 else:
     print '%s detected for clipping.' % poly_file
 
+# Finally launch the listening process.
 while True:
     # Check if diff to be imported is empty. If not, take the latest diff.
     diff_to_be_imported = sorted(listdir(default['IMPORT_QUEUE']))
     if len(diff_to_be_imported):
-        print "Timestamp from the lastest not imported diff."
         timestamp = diff_to_be_imported[-1].split('.')[0]
+        print "Timestamp from the latest not imported diff : %s" % timestamp
     else:
         # Check if imported diff is empty. If not, take the latest diff.
         imported_diff = sorted(listdir(default['IMPORT_DONE']))
         if len(imported_diff):
-            print "Timestamp from the lastest imported diff."
+            print "Timestamp from the latest imported diff : %s" % timestamp
             timestamp = imported_diff[-1].split('.')[0]
 
         else:
             # Take the timestamp from original file.
-            print "Timestamp from the original state file."
             state_file_settings = {}
             with open(state_file) as a_file:
                 for line in a_file:
@@ -117,6 +118,7 @@ while True:
                         state_file_settings[name] = value
 
             timestamp = state_file_settings['timestamp'].strip()
+            print "Timestamp from the original state file : %s" % timestamp
 
     # Removing some \ in the timestamp.
     timestamp = timestamp.replace('\\', '')
@@ -142,8 +144,9 @@ while True:
     command.append(timestamp)
     command.append(file_path)
 
+    print ' '.join(command)
     if call(command) != 0:
-        print >> stderr, 'An error occured in osmupdate.'
+        print >> stderr, 'An error occured in osmupdate. Let\'s try again.'
         # Sleep less.
         print 'Sleeping for 2 seconds.'
         sleep(2.0)
