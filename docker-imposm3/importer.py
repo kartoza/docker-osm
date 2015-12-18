@@ -28,9 +28,6 @@ from subprocess import call
 from time import sleep
 from sys import stderr
 
-# In docker-compose, we should wait for the DB is ready.
-sleep(45)
-
 # All these default values can be overwritten by env vars
 default = {
     'TIME': 120,
@@ -60,6 +57,57 @@ if default['SRID'] not in ['4326', '3857']:
     print >> stderr, 'SRID not supported : %s' % default['srid']
     exit()
 
+# Check folders.
+folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'SETTINGS', 'CACHE']
+for folder in folders:
+    if not isabs(default[folder]):
+        # Get the absolute path.
+        default[folder] = abspath(default[folder])
+
+    # Test the folder
+    if not exists(default[folder]):
+        print >> stderr, 'The folder %s does not exist.' % default[folder]
+        exit()
+
+# Test files
+state_file = None
+osm_file = None
+mapping_file = None
+post_import_file = None
+for f in listdir(default['SETTINGS']):
+    if f == 'last.state.txt':
+        state_file = join(default['SETTINGS'], f)
+
+    if f.endswith('.pbf'):
+        osm_file = join(default['SETTINGS'], f)
+
+    if f.endswith('.json'):
+        mapping_file = join(default['SETTINGS'], f)
+
+    if f.endswith('.sql'):
+        post_import_file = join(default['SETTINGS'], f)
+
+if not osm_file:
+    print >> stderr, 'OSM file *.pbf is missing in %s' % default['SETTINGS']
+    exit()
+
+if not state_file:
+    print >> stderr, 'State file last.state.txt is missing in %s' % default['SETTINGS']
+    exit()
+
+if not mapping_file:
+    print >> stderr, 'Mapping file *.json is missing in %s' % default['SETTINGS']
+    exit()
+
+if not post_import_file:
+    print 'No *.sql detected in %s' % default['SETTINGS']
+else:
+    print '%s detected for post import.' % post_import_file
+
+# In docker-compose, we should wait for the DB is ready.
+print 'The checkup is OK. The container will continue soon, after the database.'
+sleep(45)
+
 # Check postgis.
 try:
     connection = connect(
@@ -79,52 +127,7 @@ postgis_uri = 'postgis://%s:%s@%s/%s' % (
     default['HOST'],
     default['DATABASE'])
 
-# Check folders.
-folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'SETTINGS', 'CACHE']
-for folder in folders:
-    if not isabs(default[folder]):
-        # Get the absolute path.
-        default[folder] = abspath(default[folder])
 
-    # Test the folder
-    if not exists(default[folder]):
-        print >> stderr, 'The folder %s does not exist.' % default[folder]
-        exit()
-
-# Test files
-state_file = None
-osm_file = None
-mapping_file = None
-post_import_file = None
-for f in listdir(default['SETTINGS']):
-    if f.endswith('.state.txt'):
-        state_file = join(default['SETTINGS'], f)
-
-    if f.endswith('.pbf'):
-        osm_file = join(default['SETTINGS'], f)
-
-    if f.endswith('.json'):
-        mapping_file = join(default['SETTINGS'], f)
-
-    if f.endswith('.sql'):
-        post_import_file = join(default['SETTINGS'], f)
-
-if not osm_file:
-    print >> stderr, 'OSM file *.pbf is missing in %s' % default['SETTINGS']
-    exit()
-
-if not state_file:
-    print >> stderr, 'State file *.state.txt is missing in %s' % default['SETTINGS']
-    exit()
-
-if not mapping_file:
-    print >> stderr, 'Mapping file *.json is missing in %s' % default['SETTINGS']
-    exit()
-
-if not post_import_file:
-    print 'No *.sql detected in %s' % default['SETTINGS']
-else:
-    print '%s detected for post import.' % post_import_file
 
 # Check if there is a table starting with 'osm_'
 sql = 'select count(*) ' \
@@ -134,25 +137,31 @@ sql = 'select count(*) ' \
 cursor.execute(sql)
 osm_tables = cursor.fetchone()[0]
 if osm_tables < 1:
-    # It means that the DB is empty. Let's import the file.
-    commands = ['imposm3', 'import', '-diff', '-deployproduction']
-    commands += ['-overwritecache', '-cachedir', default['CACHE']]
-    commands += ['-srid', default['SRID']]
-    commands += ['-dbschema-production', default['DBSCHEMA_PRODUCTION']]
-    commands += ['-dbschema-import', default['DBSCHEMA_IMPORT']]
-    commands += ['-dbschema-backup', default['DBSCHEMA_BACKUP']]
-    commands += ['-diffdir', default['SETTINGS']]
-    commands += ['-mapping', mapping_file]
-    commands += ['-read', osm_file]
-    commands += ['-write', '-connection', postgis_uri]
+    # It means that the DB is empty. Let's import the PBF file.
+    command = ['imposm3', 'import', '-diff', '-deployproduction']
+    command += ['-overwritecache', '-cachedir', default['CACHE']]
+    command += ['-srid', default['SRID']]
+    command += ['-dbschema-production', default['DBSCHEMA_PRODUCTION']]
+    command += ['-dbschema-import', default['DBSCHEMA_IMPORT']]
+    command += ['-dbschema-backup', default['DBSCHEMA_BACKUP']]
+    command += ['-diffdir', default['SETTINGS']]
+    command += ['-mapping', mapping_file]
+    command += ['-read', osm_file]
+    command += ['-write', '-connection', postgis_uri]
 
-    if not call(commands) == 0:
+    print 'The database is empty. Let\'s import the PBF : %s' % osm_file
+    print ' '.join(command)
+    if not call(command) == 0:
         print >> stderr, 'An error occured in imposm with the original file.'
         exit()
+    else:
+        print 'Import PBF successful : %s' % osm_file
 
     if post_import_file:
         for sql in open(post_import_file):
             cursor.execute(sql)
+else:
+    print 'The database is not empty. Let\'s import only diff files.'
 
 # Finally launch the listening process.
 while True:
@@ -160,21 +169,23 @@ while True:
     if len(import_queue) > 0:
         for diff in import_queue:
             print 'Importing diff %s' % diff
-            commands = ['imposm3', 'diff']
-            commands += ['-cachedir', default['CACHE']]
-            commands += ['-dbschema-production', default['DBSCHEMA_PRODUCTION']]
-            commands += ['-dbschema-import', default['DBSCHEMA_IMPORT']]
-            commands += ['-dbschema-backup', default['DBSCHEMA_BACKUP']]
-            commands += ['-srid', default['SRID']]
-            commands += ['-diffdir', default['SETTINGS']]
-            commands += ['-mapping', mapping_file]
-            commands += ['-connection', postgis_uri]
-            commands += [join(default['IMPORT_QUEUE'], diff)]
+            command = ['imposm3', 'diff']
+            command += ['-cachedir', default['CACHE']]
+            command += ['-dbschema-production', default['DBSCHEMA_PRODUCTION']]
+            command += ['-dbschema-import', default['DBSCHEMA_IMPORT']]
+            command += ['-dbschema-backup', default['DBSCHEMA_BACKUP']]
+            command += ['-srid', default['SRID']]
+            command += ['-diffdir', default['SETTINGS']]
+            command += ['-mapping', mapping_file]
+            command += ['-connection', postgis_uri]
+            command += [join(default['IMPORT_QUEUE'], diff)]
 
-            if call(commands) == 0:
+            print ' '.join(command)
+            if call(command) == 0:
                 move(
                     join(default['IMPORT_QUEUE'], diff),
                     join(default['IMPORT_DONE'], diff))
+                print 'Import diff successful : %s' % diff
             else:
                 print >> stderr, 'An error occured in imposm with a diff.'
                 exit()
