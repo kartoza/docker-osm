@@ -9,7 +9,7 @@ storage:
     - /home/cache
 
 db:
-  image: kartoza/postgis
+  image: kartoza/postgis:9.4-2.1
   hostname: db
   environment:
     - USERNAME=docker
