@@ -59,16 +59,12 @@ for folder in folders:
 # Test files
 state_file = None
 osm_file = None
-poly_file = None
 for f in listdir(default['SETTINGS']):
     if f == 'last.state.txt':
         state_file = join(default['SETTINGS'], f)
 
     if f.endswith('.pbf'):
         osm_file = join(default['SETTINGS'], f)
-
-    if f.endswith('.poly'):
-        poly_file = join(default['SETTINGS'], f)
 
     """
     # Todo : need fix custom URL and sporadic diff : daily, hourly and minutely
@@ -84,11 +80,6 @@ if not state_file:
 if not osm_file:
     print >> stderr, 'OSM file *.osm.pbf is missing in %s' % default['SETTINGS']
     exit()
-
-if not poly_file:
-    print 'No *.poly detected in %s' % default['SETTINGS']
-else:
-    print '%s detected for clipping.' % poly_file
 
 # In docker-compose, we should wait for the DB is ready.
 print 'The checkup is OK. The container will continue soon, after the database.'
@@ -134,8 +125,6 @@ while True:
 
     # Command
     command = ['osmupdate', '-v']
-    if poly_file:
-        command.append('-B=%s' % poly_file)
     command += ['--max-days=' + default['MAX_DAYS']]
     command += [default['DIFF']]
     command += ['--max-merge=' + default['MAX_MERGE']]
