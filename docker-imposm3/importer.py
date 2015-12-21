@@ -70,13 +70,10 @@ for folder in folders:
         exit()
 
 # Test files
-state_file = None
 osm_file = None
 mapping_file = None
 post_import_file = None
 for f in listdir(default['SETTINGS']):
-    if f == 'last.state.txt':
-        state_file = join(default['SETTINGS'], f)
 
     if f.endswith('.pbf'):
         osm_file = join(default['SETTINGS'], f)
@@ -89,10 +86,6 @@ for f in listdir(default['SETTINGS']):
 
 if not osm_file:
     print >> stderr, 'OSM file *.pbf is missing in %s' % default['SETTINGS']
-    exit()
-
-if not state_file:
-    print >> stderr, 'State file last.state.txt is missing in %s' % default['SETTINGS']
     exit()
 
 if not mapping_file:

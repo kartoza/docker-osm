@@ -22,7 +22,7 @@
 from os.path import exists, join, isabs, abspath
 from os import listdir, environ
 from sys import exit
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from datetime import datetime
 from time import sleep
 from sys import stderr
@@ -57,11 +57,8 @@ for folder in folders:
         exit()
 
 # Test files
-state_file = None
 osm_file = None
 for f in listdir(default['SETTINGS']):
-    if f == 'last.state.txt':
-        state_file = join(default['SETTINGS'], f)
 
     if f.endswith('.pbf'):
         osm_file = join(default['SETTINGS'], f)
@@ -72,10 +69,6 @@ for f in listdir(default['SETTINGS']):
         with open(join(default['SETTINGS'], f), 'r') as content_file:
             default['BASE_URL'] = content_file.read()
     """
-
-if not state_file:
-    print >> stderr, 'State file last.state.txt is missing in %s' % default['SETTINGS']
-    exit()
 
 if not osm_file:
     print >> stderr, 'OSM file *.osm.pbf is missing in %s' % default['SETTINGS']
@@ -101,14 +94,13 @@ while True:
 
         else:
             # Take the timestamp from original file.
-            state_file_settings = {}
-            with open(state_file) as a_file:
-                for line in a_file:
-                    if '=' in line:
-                        name, value = line.partition("=")[::2]
-                        state_file_settings[name] = value
+            command = ['osmconvert', osm_file, '--out-timestamp']
+            processus = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            timestamp, err = processus.communicate()
 
-            timestamp = state_file_settings['timestamp'].strip()
+            # Remove new line
+            timestamp = timestamp.strip()
+
             print 'Timestamp from the original state file : %s' % timestamp
 
     # Removing some \ in the timestamp.
