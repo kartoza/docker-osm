@@ -27,10 +27,6 @@ from datetime import datetime
 from time import sleep
 from sys import stderr
 
-# In docker-compose, we should wait for the DB is ready.
-print 'The container will start soon, after the database.'
-sleep(45)
-
 # Default values which can be overwritten.
 default = {
     'MAX_DAYS': '100',
@@ -44,8 +40,8 @@ default = {
     'TIME': 120,
 }
 
-for key in default.keys():
-    if key in environ:
+for key in environ.keys():
+    if key in default.keys():
         default[key] = environ[key]
 
 # Folders
@@ -94,19 +90,23 @@ if not poly_file:
 else:
     print '%s detected for clipping.' % poly_file
 
+# In docker-compose, we should wait for the DB is ready.
+print 'The checkup is OK. The container will continue soon, after the database.'
+sleep(45)
+
 # Finally launch the listening process.
 while True:
     # Check if diff to be imported is empty. If not, take the latest diff.
     diff_to_be_imported = sorted(listdir(default['IMPORT_QUEUE']))
     if len(diff_to_be_imported):
         timestamp = diff_to_be_imported[-1].split('.')[0]
-        print "Timestamp from the latest not imported diff : %s" % timestamp
+        print 'Timestamp from the latest not imported diff : %s' % timestamp
     else:
         # Check if imported diff is empty. If not, take the latest diff.
         imported_diff = sorted(listdir(default['IMPORT_DONE']))
         if len(imported_diff):
-            print "Timestamp from the latest imported diff : %s" % timestamp
             timestamp = imported_diff[-1].split('.')[0]
+            print 'Timestamp from the latest imported diff : %s' % timestamp
 
         else:
             # Take the timestamp from original file.
@@ -118,7 +118,7 @@ while True:
                         state_file_settings[name] = value
 
             timestamp = state_file_settings['timestamp'].strip()
-            print "Timestamp from the original state file : %s" % timestamp
+            print 'Timestamp from the original state file : %s' % timestamp
 
     # Removing some \ in the timestamp.
     timestamp = timestamp.replace('\\', '')

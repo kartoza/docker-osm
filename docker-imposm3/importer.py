@@ -48,8 +48,8 @@ default = {
 }
 
 # Check if we overwrite default values.
-for key in default.keys():
-    if key in environ:
+for key in environ.keys():
+    if key in default.keys():
         default[key] = environ[key]
 
 # Check valid SRID.
