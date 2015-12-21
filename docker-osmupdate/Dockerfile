@@ -21,7 +21,9 @@ RUN apt-get -y install ca-certificates rpl pwgen
 RUN apt-get -y install osmctools wget gzip gcc libc-dev zlib1g-dev
 WORKDIR /home
 ADD osmupdate.c /home/osmupdate.c
+ADD osmconvert.c /home/osmconvert.c
 RUN gcc -x c - -o osmupdate osmupdate.c
+RUN gcc -x c - -O3 -o osmconvert osmconvert.c -lz
 
 # Add the python script which will call osmupdate
 ADD download.py /home/download.py
