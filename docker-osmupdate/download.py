@@ -83,13 +83,15 @@ while True:
     # Check if diff to be imported is empty. If not, take the latest diff.
     diff_to_be_imported = sorted(listdir(default['IMPORT_QUEUE']))
     if len(diff_to_be_imported):
-        timestamp = diff_to_be_imported[-1].split('.')[0]
+        file_name = diff_to_be_imported[-1].split('.')[0]
+        timestamp = file_name.split('->-')[1]
         print 'Timestamp from the latest not imported diff : %s' % timestamp
     else:
         # Check if imported diff is empty. If not, take the latest diff.
         imported_diff = sorted(listdir(default['IMPORT_DONE']))
         if len(imported_diff):
-            timestamp = imported_diff[-1].split('.')[0]
+            file_name = imported_diff[-1].split('.')[0]
+            timestamp = file_name.split('->-')[1]
             print 'Timestamp from the latest imported diff : %s' % timestamp
 
         else:
@@ -112,7 +114,7 @@ while True:
     print 'Current time : %s' % current_time
 
     # Destination
-    file_name = '%s.osc.gz' % current_time
+    file_name = '%s->-%s.osc.gz' % (timestamp, current_time)
     file_path = join(default['IMPORT_QUEUE'], file_name)
 
     # Command
