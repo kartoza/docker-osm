@@ -219,7 +219,7 @@ while True:
                 database_timestamp = diff.split('.')[0].split('->-')[1]
                 file_path = join(default['SETTINGS'], 'timestamp.txt')
                 timestamp_file = open(file_path, 'w')
-                timestamp_file.write(database_timestamp)
+                timestamp_file.write('%s\n' % database_timestamp)
                 timestamp_file.close()
 
                 print 'Import diff successful : %s' % diff
