@@ -214,6 +214,14 @@ while True:
                 move(
                     join(default['IMPORT_QUEUE'], diff),
                     join(default['IMPORT_DONE'], diff))
+
+                # Update the timestamp in the file.
+                database_timestamp = diff.split('.')[0].split('->-')[1]
+                file_path = join(default['SETTINGS'], 'timestamp.txt')
+                timestamp_file = open(file_path, 'w')
+                timestamp_file.write(database_timestamp)
+                timestamp_file.close()
+
                 print 'Import diff successful : %s' % diff
             else:
                 print >> stderr, 'An error occured in imposm with a diff.'
