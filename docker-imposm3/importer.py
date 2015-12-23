@@ -44,17 +44,23 @@ default = {
     'OPTIMIZE': 'false',
     'DBSCHEMA_PRODUCTION': 'public',
     'DBSCHEMA_IMPORT': 'import',
-    'DBSCHEMA_BACKUP': 'backup'
+    'DBSCHEMA_BACKUP': 'backup',
+    'QGIS_STYLE': 'yes'
 }
 
 # Check if we overwrite default values.
-for key in default.keys():
-    if key in environ:
+for key in environ.keys():
+    if key in default.keys():
         default[key] = environ[key]
 
 # Check valid SRID.
 if default['SRID'] not in ['4326', '3857']:
-    print >> stderr, 'SRID not supported : %s' % default['srid']
+    print >> stderr, 'SRID not supported : %s' % default['SRID']
+    exit()
+
+# Check valid QGIS_STYLE.
+if default['QGIS_STYLE'] not in ['yes', 'no']:
+    print >> stderr, 'QGIS_STYLE not supported : %s' % default['QGIS_STYLE']
     exit()
 
 # Check folders.
@@ -70,13 +76,11 @@ for folder in folders:
         exit()
 
 # Test files
-state_file = None
 osm_file = None
 mapping_file = None
 post_import_file = None
+qgis_style = None
 for f in listdir(default['SETTINGS']):
-    if f == 'last.state.txt':
-        state_file = join(default['SETTINGS'], f)
 
     if f.endswith('.pbf'):
         osm_file = join(default['SETTINGS'], f)
@@ -84,15 +88,14 @@ for f in listdir(default['SETTINGS']):
     if f.endswith('.json'):
         mapping_file = join(default['SETTINGS'], f)
 
-    if f.endswith('.sql'):
+    if f == 'post-pbf-import.sql':
         post_import_file = join(default['SETTINGS'], f)
+
+    if f == 'qgis_style.sql':
+        qgis_style = join(default['SETTINGS'], f)
 
 if not osm_file:
     print >> stderr, 'OSM file *.pbf is missing in %s' % default['SETTINGS']
-    exit()
-
-if not state_file:
-    print >> stderr, 'State file last.state.txt is missing in %s' % default['SETTINGS']
     exit()
 
 if not mapping_file:
@@ -103,6 +106,14 @@ if not post_import_file:
     print 'No *.sql detected in %s' % default['SETTINGS']
 else:
     print '%s detected for post import.' % post_import_file
+
+if not qgis_style and default['QGIS_STYLE'] == 'yes':
+    print >> stderr, 'qgis_style.sql is missing in %s and QGIS_STYLE = yes.' % default['SETTINGS']
+    exit()
+elif qgis_style and default['QGIS_STYLE']:
+    print '%s detected for QGIS styling.' % qgis_style
+else:
+    print 'Not using QGIS default styles.'
 
 # In docker-compose, we should wait for the DB is ready.
 print 'The checkup is OK. The container will continue soon, after the database.'
@@ -157,9 +168,27 @@ if osm_tables < 1:
     else:
         print 'Import PBF successful : %s' % osm_file
 
+    if post_import_file or qgis_style:
+        # Set the password for psql
+        environ['PGPASSWORD'] = default['PASSWORD']
+
     if post_import_file:
-        for sql in open(post_import_file):
-            cursor.execute(sql)
+        print 'Running the post import SQL file.'
+        command = ['psql']
+        command += ['-h', default['HOST']]
+        command += ['-U', default['USER']]
+        command += ['-d', default['DATABASE']]
+        command += ['-f', post_import_file]
+        call(command)
+
+    if qgis_style:
+        'Installing QGIS styles.'
+        command = ['psql']
+        command += ['-h', default['HOST']]
+        command += ['-U', default['USER']]
+        command += ['-d', default['DATABASE']]
+        command += ['-f', qgis_style]
+        call(command)
 else:
     print 'The database is not empty. Let\'s import only diff files.'
 
@@ -185,6 +214,14 @@ while True:
                 move(
                     join(default['IMPORT_QUEUE'], diff),
                     join(default['IMPORT_DONE'], diff))
+
+                # Update the timestamp in the file.
+                database_timestamp = diff.split('.')[0].split('->-')[1]
+                file_path = join(default['SETTINGS'], 'timestamp.txt')
+                timestamp_file = open(file_path, 'w')
+                timestamp_file.write('%s\n' % database_timestamp)
+                timestamp_file.close()
+
                 print 'Import diff successful : %s' % diff
             else:
                 print >> stderr, 'An error occured in imposm with a diff.'

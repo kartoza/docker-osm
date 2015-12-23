@@ -22,14 +22,10 @@
 from os.path import exists, join, isabs, abspath
 from os import listdir, environ
 from sys import exit
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from datetime import datetime
 from time import sleep
 from sys import stderr
-
-# In docker-compose, we should wait for the DB is ready.
-print 'The container will start soon, after the database.'
-sleep(45)
 
 # Default values which can be overwritten.
 default = {
@@ -44,8 +40,8 @@ default = {
     'TIME': 120,
 }
 
-for key in default.keys():
-    if key in environ:
+for key in environ.keys():
+    if key in default.keys():
         default[key] = environ[key]
 
 # Folders
@@ -61,18 +57,11 @@ for folder in folders:
         exit()
 
 # Test files
-state_file = None
 osm_file = None
-poly_file = None
 for f in listdir(default['SETTINGS']):
-    if f == 'last.state.txt':
-        state_file = join(default['SETTINGS'], f)
 
     if f.endswith('.pbf'):
         osm_file = join(default['SETTINGS'], f)
-
-    if f.endswith('.poly'):
-        poly_file = join(default['SETTINGS'], f)
 
     """
     # Todo : need fix custom URL and sporadic diff : daily, hourly and minutely
@@ -81,44 +70,40 @@ for f in listdir(default['SETTINGS']):
             default['BASE_URL'] = content_file.read()
     """
 
-if not state_file:
-    print >> stderr, 'State file last.state.txt is missing in %s' % default['SETTINGS']
-    exit()
-
 if not osm_file:
     print >> stderr, 'OSM file *.osm.pbf is missing in %s' % default['SETTINGS']
     exit()
 
-if not poly_file:
-    print 'No *.poly detected in %s' % default['SETTINGS']
-else:
-    print '%s detected for clipping.' % poly_file
+# In docker-compose, we should wait for the DB is ready.
+print 'The checkup is OK. The container will continue soon, after the database.'
+sleep(45)
 
 # Finally launch the listening process.
 while True:
     # Check if diff to be imported is empty. If not, take the latest diff.
     diff_to_be_imported = sorted(listdir(default['IMPORT_QUEUE']))
     if len(diff_to_be_imported):
-        timestamp = diff_to_be_imported[-1].split('.')[0]
-        print "Timestamp from the latest not imported diff : %s" % timestamp
+        file_name = diff_to_be_imported[-1].split('.')[0]
+        timestamp = file_name.split('->-')[1]
+        print 'Timestamp from the latest not imported diff : %s' % timestamp
     else:
         # Check if imported diff is empty. If not, take the latest diff.
         imported_diff = sorted(listdir(default['IMPORT_DONE']))
         if len(imported_diff):
-            print "Timestamp from the latest imported diff : %s" % timestamp
-            timestamp = imported_diff[-1].split('.')[0]
+            file_name = imported_diff[-1].split('.')[0]
+            timestamp = file_name.split('->-')[1]
+            print 'Timestamp from the latest imported diff : %s' % timestamp
 
         else:
             # Take the timestamp from original file.
-            state_file_settings = {}
-            with open(state_file) as a_file:
-                for line in a_file:
-                    if '=' in line:
-                        name, value = line.partition("=")[::2]
-                        state_file_settings[name] = value
+            command = ['osmconvert', osm_file, '--out-timestamp']
+            processus = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            timestamp, err = processus.communicate()
 
-            timestamp = state_file_settings['timestamp'].strip()
-            print "Timestamp from the original state file : %s" % timestamp
+            # Remove new line
+            timestamp = timestamp.strip()
+
+            print 'Timestamp from the original state file : %s' % timestamp
 
     # Removing some \ in the timestamp.
     timestamp = timestamp.replace('\\', '')
@@ -129,13 +114,11 @@ while True:
     print 'Current time : %s' % current_time
 
     # Destination
-    file_name = '%s.osc.gz' % current_time
+    file_name = '%s->-%s.osc.gz' % (timestamp, current_time)
     file_path = join(default['IMPORT_QUEUE'], file_name)
 
     # Command
     command = ['osmupdate', '-v']
-    if poly_file:
-        command.append('-B=%s' % poly_file)
     command += ['--max-days=' + default['MAX_DAYS']]
     command += [default['DIFF']]
     command += ['--max-merge=' + default['MAX_MERGE']]

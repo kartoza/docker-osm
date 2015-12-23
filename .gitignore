@@ -1,7 +1,11 @@
 .idea
 *.*~
+cache
+import_done
+import_queue
 settings/*.pbf
 settings/*.state.txt
 settings/*.poly
 settings/last.state.txt
 settings/custom_url_diff.txt
+settings/timestamp.txt
