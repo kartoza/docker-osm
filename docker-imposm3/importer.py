@@ -115,6 +115,12 @@ elif qgis_style and default['QGIS_STYLE']:
 else:
     print 'Not using QGIS default styles.'
 
+# Create the timestamp file
+file_path = join(default['SETTINGS'], 'timestamp.txt')
+timestamp_file = open(file_path, 'w')
+timestamp_file.write('UNDEFINED\n')
+timestamp_file.close()
+
 # In docker-compose, we should wait for the DB is ready.
 print 'The checkup is OK. The container will continue soon, after the database.'
 sleep(45)
