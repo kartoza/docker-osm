@@ -22,6 +22,13 @@ rundev:
 	@echo "------------------------------------------------------------------"
 	@docker-compose -p $(PROJECT_ID) up
 
+stop:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Stopping in production mode"
+	@echo "------------------------------------------------------------------"
+	@docker-compose -p $(PROJECT_ID) stop
+
 kill:
 	@echo
 	@echo "------------------------------------------------------------------"
@@ -41,11 +48,11 @@ ipdb:
 	@echo "------------------------------------------------------------------"
 	@echo "Database's IP"
 	@echo "------------------------------------------------------------------"
-	@docker inspect $(PROJECT_ID)_db_1 | grep '"IPAddress"' | head -1 | cut -d '"' -f 4
+	@docker inspect $(PROJECT_ID)_db | grep '"IPAddress"' | head -1 | cut -d '"' -f 4
 
 timestamp:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Timestamp"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)_imposm_1 cat /home/settings/timestamp.txt
+	@docker exec -t -i $(PROJECT_ID)_imposm cat /home/settings/timestamp.txt
