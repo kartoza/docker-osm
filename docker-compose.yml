@@ -1,5 +1,6 @@
 storage:
   image: ubuntu:latest
+  container_name: dockerosm_storage
   hostname: storage
   volumes:
     # These are sharable to other containers
@@ -14,14 +15,15 @@ storage:
 db:
   # About the postgresql version, it should match in the dockerfile of docker-imposm3
   image: kartoza/postgis:9.4-2.1
+  container_name: dockerosm_db
   hostname: db
   environment:
     - USERNAME=docker
     - PASS=docker
 
 imposm:
-  #image: kartoza/imposm
   build: docker-imposm3
+  container_name: dockerosm_imposm
   volumes_from:
     - storage
   links:
@@ -58,6 +60,7 @@ imposm:
 
 osmupdate:
   build: docker-osmupdate
+  container_name: dockerosm_osmupdate
   volumes_from:
     - storage
   environment:
