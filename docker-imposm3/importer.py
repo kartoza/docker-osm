@@ -45,6 +45,7 @@ default = {
     'DBSCHEMA_PRODUCTION': 'public',
     'DBSCHEMA_IMPORT': 'import',
     'DBSCHEMA_BACKUP': 'backup',
+    'CLIP': 'yes',
     'QGIS_STYLE': 'yes'
 }
 
@@ -61,6 +62,11 @@ if default['SRID'] not in ['4326', '3857']:
 # Check valid QGIS_STYLE.
 if default['QGIS_STYLE'] not in ['yes', 'no']:
     print >> stderr, 'QGIS_STYLE not supported : %s' % default['QGIS_STYLE']
+    exit()
+
+# Check valid CLIP.
+if default['CLIP'] not in ['yes', 'no']:
+    print >> stderr, 'CLIP not supported : %s' % default['CLIP']
     exit()
 
 # Check folders.
@@ -80,6 +86,8 @@ osm_file = None
 mapping_file = None
 post_import_file = None
 qgis_style = None
+clip_shapefile = None
+clip_sql = None
 for f in listdir(default['SETTINGS']):
 
     if f.endswith('.pbf'):
@@ -93,6 +101,14 @@ for f in listdir(default['SETTINGS']):
 
     if f == 'qgis_style.sql':
         qgis_style = join(default['SETTINGS'], f)
+
+    if f == 'clip':
+        clip_folder = join(default['SETTINGS'], f)
+        for clip_file in listdir(clip_folder):
+            if clip_file == 'clip.shp':
+                clip_shapefile = join(clip_folder, clip_file)
+            if clip_file == 'clip.sql':
+                clip_sql = join(clip_folder, clip_file)
 
 if not osm_file:
     print >> stderr, 'OSM file *.pbf is missing in %s' % default['SETTINGS']
@@ -188,13 +204,37 @@ if osm_tables < 1:
         call(command)
 
     if qgis_style:
-        'Installing QGIS styles.'
+        print 'Installing QGIS styles.'
         command = ['psql']
         command += ['-h', default['HOST']]
         command += ['-U', default['USER']]
         command += ['-d', default['DATABASE']]
         command += ['-f', qgis_style]
         call(command)
+
+    if clip_shapefile:
+        # Create function clean_tables()
+        command = ['psql']
+        command += ['-h', default['HOST']]
+        command += ['-U', default['USER']]
+        command += ['-d', default['DATABASE']]
+        command += ['-f', clip_sql]
+        call(command)
+
+        sql = 'select count(*) ' \
+              'from information_schema.tables ' \
+              'where table_name like \'clip\';'
+        # noinspection PyUnboundLocalVariable
+        cursor.execute(sql)
+        clip_tables = cursor.fetchone()[0]
+        if clip_tables == 1:
+            print 'Clipping.'
+            command = ['psql']
+            command += ['-h', default['HOST']]
+            command += ['-U', default['USER']]
+            command += ['-d', default['DATABASE']]
+            command += ['-c', 'SELECT clean_tables();']
+            call(command)
 else:
     print 'The database is not empty. Let\'s import only diff files.'
 
@@ -227,6 +267,22 @@ while True:
                 timestamp_file = open(file_path, 'w')
                 timestamp_file.write('%s\n' % database_timestamp)
                 timestamp_file.close()
+
+                if clip_shapefile:
+                    sql = 'select count(*) ' \
+                          'from information_schema.tables ' \
+                          'where table_name like \'clip\';'
+                    # noinspection PyUnboundLocalVariable
+                    cursor.execute(sql)
+                    clip_tables = cursor.fetchone()[0]
+                    if clip_tables == 1:
+                        print 'Clipping.'
+                        command = ['psql']
+                        command += ['-h', default['HOST']]
+                        command += ['-U', default['USER']]
+                        command += ['-d', default['DATABASE']]
+                        command += ['-c', 'SELECT clean_tables();']
+                        call(command)
 
                 print 'Import diff successful : %s' % diff
             else:
