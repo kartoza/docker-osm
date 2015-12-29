@@ -27,113 +27,135 @@ from datetime import datetime
 from time import sleep
 from sys import stderr
 
-# Default values which can be overwritten.
-default = {
-    'MAX_DAYS': '100',
-    'DIFF': 'sporadic',
-    'MAX_MERGE': '7',
-    'COMPRESSION_LEVEL': '1',
-    'BASE_URL': 'http://planet.openstreetmap.org/replication/',
-    'IMPORT_QUEUE': 'import_queue',
-    'IMPORT_DONE': 'import_done',
-    'SETTINGS': 'settings',
-    'TIME': 120,
-}
 
-for key in environ.keys():
-    if key in default.keys():
-        default[key] = environ[key]
+class Downloader(object):
 
-# Folders
-folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'SETTINGS']
-for folder in folders:
-    if not isabs(default[folder]):
-        # Get the absolute path.
-        default[folder] = abspath(default[folder])
+    def __init__(self):
+        # Default values which can be overwritten.
+        self.default = {
+            'MAX_DAYS': '100',
+            'DIFF': 'sporadic',
+            'MAX_MERGE': '7',
+            'COMPRESSION_LEVEL': '1',
+            'BASE_URL': 'http://planet.openstreetmap.org/replication/',
+            'IMPORT_QUEUE': 'import_queue',
+            'IMPORT_DONE': 'import_done',
+            'SETTINGS': 'settings',
+            'TIME': 120,
+        }
+        self.osm_file = None
 
-    # Test the folder
-    if not exists(default[folder]):
-        print >> stderr, 'The folder %s does not exist.' % default[folder]
+    @staticmethod
+    def info(message):
+        print message
+
+    @staticmethod
+    def error(message):
+        print >> stderr, message
         exit()
 
-# Test files
-osm_file = None
-for f in listdir(default['SETTINGS']):
+    def overwrite_environment(self):
+        """Overwrite default values from the environment."""
+        for key in environ.keys():
+            if key in self.default.keys():
+                self.default[key] = environ[key]
 
-    if f.endswith('.pbf'):
-        osm_file = join(default['SETTINGS'], f)
+    def check_settings(self):
+        """Perform various checking."""
+        # Folders
+        folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'SETTINGS']
+        for folder in folders:
+            if not isabs(self.default[folder]):
+                # Get the absolute path.
+                self.default[folder] = abspath(self.default[folder])
 
-    """
-    # Todo : need fix custom URL and sporadic diff : daily, hourly and minutely
-    if f == 'custom_url_diff.txt':
-        with open(join(default['SETTINGS'], f), 'r') as content_file:
-            default['BASE_URL'] = content_file.read()
-    """
+            # Test the folder
+            if not exists(self.default[folder]):
+                msg = 'The folder %s does not exist.' % self.default[folder]
+                self.error(msg)
 
-if not osm_file:
-    print >> stderr, 'OSM file *.osm.pbf is missing in %s' % default['SETTINGS']
-    exit()
+        # Test files
+        for f in listdir(self.default['SETTINGS']):
 
-# In docker-compose, we should wait for the DB is ready.
-print 'The checkup is OK. The container will continue soon, after the database.'
-sleep(45)
+            if f.endswith('.pbf'):
+                self.osm_file = join(self.default['SETTINGS'], f)
 
-# Finally launch the listening process.
-while True:
-    # Check if diff to be imported is empty. If not, take the latest diff.
-    diff_to_be_imported = sorted(listdir(default['IMPORT_QUEUE']))
-    if len(diff_to_be_imported):
-        file_name = diff_to_be_imported[-1].split('.')[0]
-        timestamp = file_name.split('->-')[1]
-        print 'Timestamp from the latest not imported diff : %s' % timestamp
-    else:
-        # Check if imported diff is empty. If not, take the latest diff.
-        imported_diff = sorted(listdir(default['IMPORT_DONE']))
-        if len(imported_diff):
-            file_name = imported_diff[-1].split('.')[0]
+        if not self.osm_file:
+            msg = 'OSM file *.osm.pbf is missing in %s' % self.default['SETTINGS']
+            self.error(msg)
+
+        self.info('The checkup is OK. The container will continue soon, after the database.')
+        sleep(45)
+
+    def _check_latest_timestamp(self):
+        """Fetch the latest timestamp."""
+        # Check if diff to be imported is empty. If not, take the latest diff.
+        diff_to_be_imported = sorted(listdir(self.default['IMPORT_QUEUE']))
+        if len(diff_to_be_imported):
+            file_name = diff_to_be_imported[-1].split('.')[0]
             timestamp = file_name.split('->-')[1]
-            print 'Timestamp from the latest imported diff : %s' % timestamp
-
+            self.info('Timestamp from the latest not imported diff : %s' % timestamp)
         else:
-            # Take the timestamp from original file.
-            command = ['osmconvert', osm_file, '--out-timestamp']
-            processus = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            timestamp, err = processus.communicate()
+            # Check if imported diff is empty. If not, take the latest diff.
+            imported_diff = sorted(listdir(self.default['IMPORT_DONE']))
+            if len(imported_diff):
+                file_name = imported_diff[-1].split('.')[0]
+                timestamp = file_name.split('->-')[1]
+                self.info('Timestamp from the latest imported diff : %s' % timestamp)
 
-            # Remove new line
-            timestamp = timestamp.strip()
+            else:
+                # Take the timestamp from original file.
+                command = ['osmconvert', self.osm_file, '--out-timestamp']
+                processus = Popen(
+                    command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                timestamp, err = processus.communicate()
 
-            print 'Timestamp from the original state file : %s' % timestamp
+                # Remove new line
+                timestamp = timestamp.strip()
 
-    # Removing some \ in the timestamp.
-    timestamp = timestamp.replace('\\', '')
+                self.info('Timestamp from the original state file : %s' % timestamp)
 
-    # Save time
-    current_time = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-    print 'Old time     : %s' % timestamp
-    print 'Current time : %s' % current_time
+        # Removing some \ in the timestamp.
+        timestamp = timestamp.replace('\\', '')
+        return timestamp
 
-    # Destination
-    file_name = '%s->-%s.osc.gz' % (timestamp, current_time)
-    file_path = join(default['IMPORT_QUEUE'], file_name)
+    def download(self):
+        """Infinite loop to download diff files on a regular interval."""
+        while True:
+            timestamp = self._check_latest_timestamp()
 
-    # Command
-    command = ['osmupdate', '-v']
-    command += ['--max-days=' + default['MAX_DAYS']]
-    command += [default['DIFF']]
-    command += ['--max-merge=' + default['MAX_MERGE']]
-    command += ['--compression-level=' + default['COMPRESSION_LEVEL']]
-    command += ['--base-url=' + default['BASE_URL']]
-    command.append(timestamp)
-    command.append(file_path)
+            # Save time
+            current_time = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+            self.info('Old time     : %s' % timestamp)
+            self.info('Current time : %s' % current_time)
 
-    print ' '.join(command)
-    if call(command) != 0:
-        print >> stderr, 'An error occured in osmupdate. Let\'s try again.'
-        # Sleep less.
-        print 'Sleeping for 2 seconds.'
-        sleep(2.0)
-    else:
-        # Everything was fine, let's sleeping.
-        print 'Sleeping for %s seconds.' % default['TIME']
-        sleep(float(default['TIME']))
+            # Destination
+            file_name = '%s->-%s.osc.gz' % (timestamp, current_time)
+            file_path = join(self.default['IMPORT_QUEUE'], file_name)
+
+            # Command
+            command = ['osmupdate', '-v']
+            command += ['--max-days=' + self.default['MAX_DAYS']]
+            command += [self.default['DIFF']]
+            command += ['--max-merge=' + self.default['MAX_MERGE']]
+            command += ['--compression-level=' + self.default['COMPRESSION_LEVEL']]
+            command += ['--base-url=' + self.default['BASE_URL']]
+            command.append(timestamp)
+            command.append(file_path)
+
+            self.info(' '.join(command))
+            if call(command) != 0:
+                self.info('An error occured in osmupdate. Let\'s try again.')
+                # Sleep less.
+                self.info('Sleeping for 2 seconds.')
+                sleep(2.0)
+            else:
+                # Everything was fine, let's sleeping.
+                self.info('Sleeping for %s seconds.' % self.default['TIME'])
+                sleep(float(self.default['TIME']))
+
+if __name__ == '__main__':
+    downloader = Downloader()
+    downloader.overwrite_environment()
+    downloader.check_settings()
+    downloader.download()
