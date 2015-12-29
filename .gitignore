@@ -9,3 +9,8 @@ settings/*.poly
 settings/last.state.txt
 settings/custom_url_diff.txt
 settings/timestamp.txt
+settings/clip/clip.dbf
+settings/clip/clip.prj
+settings/clip/clip.qpj
+settings/clip/clip.shp
+settings/clip/clip.shx
