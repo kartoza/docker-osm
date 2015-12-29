@@ -20,6 +20,8 @@ db:
   environment:
     - USERNAME=docker
     - PASS=docker
+  volumes_from:
+    - storage
 
 imposm:
   build: docker-imposm3
@@ -56,6 +58,8 @@ imposm:
     - DBSCHEMA_BACKUP=backup
     # Install some styles if you are using the default mapping. It can be 'yes' or 'no'
     - QGIS_STYLE=yes
+    # Use clip in the database
+    - CLIP=no
 
 
 osmupdate:

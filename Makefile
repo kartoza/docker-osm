@@ -50,6 +50,20 @@ ipdb:
 	@echo "------------------------------------------------------------------"
 	@docker inspect $(PROJECT_ID)_db | grep '"IPAddress"' | head -1 | cut -d '"' -f 4
 
+import_clip:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Importing clip shapefile"
+	@echo "------------------------------------------------------------------"
+	@docker exec -t -i $(PROJECT_ID)_db /usr/bin/shp2pgsql -c -I -D -s 4326 /home/settings/clip/clip.shp | docker exec -i $(PROJECT_ID)_db su - postgres -c "psql gis"
+
+remove_clip:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Removing clip shapefile"
+	@echo "------------------------------------------------------------------"
+	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'DROP TABLE IF EXISTS clip;'"
+
 timestamp:
 	@echo
 	@echo "------------------------------------------------------------------"
