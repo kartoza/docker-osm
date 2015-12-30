@@ -20,6 +20,8 @@ db:
   environment:
     - USERNAME=docker
     - PASS=docker
+  volumes_from:
+    - storage
 
 imposm:
   build: docker-imposm3

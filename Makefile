@@ -56,3 +56,25 @@ timestamp:
 	@echo "Timestamp"
 	@echo "------------------------------------------------------------------"
 	@docker exec -t -i $(PROJECT_ID)_imposm cat /home/settings/timestamp.txt
+
+import_styles: remove_styles
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Importing QGIS styles"
+	@echo "------------------------------------------------------------------"
+	@docker exec -i $(PROJECT_ID)_db su - postgres -c "psql -f /home/settings/qgis_style.sql gis"
+
+remove_styles:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Removing QGIS styles"
+	@echo "------------------------------------------------------------------"
+	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'DROP TABLE IF EXISTS layer_styles;'"
+
+backup_styles:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Backup QGIS styles to BACKUP.sql"
+	@echo "------------------------------------------------------------------"
+	@echo "SET XML OPTION DOCUMENT;" > BACKUP-STYLES.sql
+	@ docker exec -t $(PROJECT_ID)_db su - postgres -c "/usr/bin/pg_dump --format plain --inserts --table public.layer_styles gis" >> BACKUP-STYLES.sql
