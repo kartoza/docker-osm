@@ -4,10 +4,8 @@ cache
 import_done
 import_queue
 settings/*.pbf
-settings/*.state.txt
-settings/*.poly
+BACKUP-STYLES.sql
 settings/last.state.txt
-settings/custom_url_diff.txt
 settings/timestamp.txt
 settings/clip/clip.dbf
 settings/clip/clip.prj
