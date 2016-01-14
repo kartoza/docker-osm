@@ -49,11 +49,14 @@ class Importer(object):
             'DBSCHEMA_PRODUCTION': 'public',
             'DBSCHEMA_IMPORT': 'import',
             'DBSCHEMA_BACKUP': 'backup',
+            'CLIP': 'no',
             'QGIS_STYLE': 'yes'
         }
         self.osm_file = None
         self.mapping_file = None
         self.post_import_file = None
+        self.clip_shape_file = None
+        self.clip_sql_file = None
         self.qgis_style = None
 
         self.cursor = None
@@ -80,6 +83,11 @@ class Importer(object):
         # Check valid SRID.
         if self.default['SRID'] not in ['4326', '3857']:
             msg = 'SRID not supported : %s' % self.default['SRID']
+            self.error(msg)
+
+        # Check valid CLIP.
+        if self.default['CLIP'] not in ['yes', 'no']:
+            msg = 'CLIP not supported : %s' % self.default['CLIP']
             self.error(msg)
 
         # Check valid QGIS_STYLE.
@@ -114,6 +122,14 @@ class Importer(object):
             if f == 'qgis_style.sql':
                 self.qgis_style = join(self.default['SETTINGS'], f)
 
+            if f == 'clip':
+                clip_folder = join(self.default['SETTINGS'], f)
+                for clip_file in listdir(clip_folder):
+                    if clip_file == 'clip.shp':
+                        self.clip_shape_file = join(clip_folder, clip_file)
+                    if clip_file == 'clip.sql':
+                        self.clip_shape_file = join(clip_folder, clip_file)
+
         if not self.osm_file:
             msg = 'OSM file *.pbf is missing in %s' % self.default['SETTINGS']
             self.error(msg)
@@ -134,6 +150,14 @@ class Importer(object):
             self.info('%s detected for QGIS styling.' % self.qgis_style)
         else:
             self.info('Not using QGIS default styles.')
+
+        if not self.clip_shape_file and self.default['CLIP'] == 'yes':
+            msg = 'clip.shp is missing and CLIP = yes.'
+            self.error(msg)
+        elif self.clip_shape_file and self.default['QGIS_STYLE']:
+            self.info('%s detected for clipping.' % self.qgis_style)
+        else:
+            self.info('No clipping.')
 
         # In docker-compose, we should wait for the DB is ready.
         self.info('The checkup is OK. The container will continue soon, after the database.')
@@ -188,6 +212,26 @@ class Importer(object):
         command += ['-f', self.qgis_style]
         call(command)
 
+    def _import_clip_function(self):
+        """Create function clean_tables()."""
+        command = ['psql']
+        command += ['-h', self.default['HOST']]
+        command += ['-U', self.default['USER']]
+        command += ['-d', self.default['DATABASE']]
+        command += ['-f', self.clip_sql_file]
+        call(command)
+
+    def clip(self):
+        """Perform clipping if the clip table is here."""
+        if self.count_table('clip') == 1:
+            self.info('Clipping')
+            command = ['psql']
+            command += ['-h', self.default['HOST']]
+            command += ['-U', self.default['USER']]
+            command += ['-d', self.default['DATABASE']]
+            command += ['-c', 'SELECT clean_tables();']
+            call(command)
+
     def count_table(self, name):
         """Check if there is a table starting with name."""
         sql = 'select count(*) ' \
@@ -234,6 +278,10 @@ class Importer(object):
         if self.post_import_file:
             self.import_custom_sql()
 
+        if self.clip_shape_file:
+            self._import_clip_function()
+            self.clip()
+
         if self.qgis_style:
             self.import_qgis_styles()
 
@@ -264,6 +312,9 @@ class Importer(object):
                         # Update the timestamp in the file.
                         database_timestamp = diff.split('.')[0].split('->-')[1]
                         self.update_timestamp(database_timestamp)
+
+                        if self.clip_shape_file:
+                            self.clip()
 
                         self.info('Import diff successful : %s' % diff)
                     else:
