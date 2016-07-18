@@ -2,35 +2,29 @@
 
 ## Usage
 
+### PBF File
 In this example we will set up an OSM database for South Africa that 
 will pull for updates every 2 minutes.
 
-First get the list of available countries in Geofabrik :
-``python pbf_downloader.py list``
-
-Now fetch the latest South Africa osm binary dump file (.pbf) and state files:
-
-You can download a country or a continent :
-``python pbf_downloader.py south-africa-and-lesotho``
-
-The script will download the PBF file, the state file and the polygon for clipping.
-
-As an alternative to the above (not all countries are available from geofabrik), you
-can also fetch the pbf from another site such as shown in the example below which 
-will fetch the latest South Africa osm binary dump file (.pbf) and state file from 
-the French openstreetmap site. Note that you need the ```wget``` command line
-application installed on your computer to follow the instructions below.
+First get a PBF file from your area and put this file in the 'settings' folder.
+You can download some PBF files on these URLS for instance :
+* http://download.geofabrik.de/
+* http://download.openstreetmap.fr/extracts/
 
 ```
 cd settings
 wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
-wget -c -O country.state.txt http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
-wget -c -O polygon.poly http://download.geofabrik.de/africa/south-africa-and-lesotho.poly
 ```
 
-You can also visit the http://download.openstreetmap.fr/extracts/ site and 
-download the extract you want manually using your browser.
+### Clipping
 
+You can put a shapefile in the clip folder. This shapefile will be used for clipping every features after the import.
+
+### QGIS Styles
+
+### SQL Trigger
+
+### Build and run
 
 Now build the docker images needed to run the application:
 

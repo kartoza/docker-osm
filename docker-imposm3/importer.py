@@ -127,8 +127,6 @@ class Importer(object):
                 for clip_file in listdir(clip_folder):
                     if clip_file == 'clip.shp':
                         self.clip_shape_file = join(clip_folder, clip_file)
-                    if clip_file == 'clip.sql':
-                        self.clip_shape_file = join(clip_folder, clip_file)
 
         if not self.osm_file:
             msg = 'OSM file *.pbf is missing in %s' % self.default['SETTINGS']
@@ -139,7 +137,7 @@ class Importer(object):
             self.error(msg)
 
         if not self.post_import_file:
-            self.info('No *.sql detected in %s' % self.default['SETTINGS'])
+            self.info('No custom SQL files *.sql detected in %s' % self.default['SETTINGS'])
         else:
             self.info('%s detected for post import.' % self.post_import_file)
 
@@ -155,9 +153,9 @@ class Importer(object):
             msg = 'clip.shp is missing and CLIP = yes.'
             self.error(msg)
         elif self.clip_shape_file and self.default['QGIS_STYLE']:
-            self.info('%s detected for clipping.' % self.qgis_style)
+            self.info('%s detected for clipping.' % self.clip_shape_file)
         else:
-            self.info('No clipping.')
+            self.info('No *.shp detected in %s, so no clipping.' % self.default['SETTINGS'])
 
         # In docker-compose, we should wait for the DB is ready.
         self.info('The checkup is OK. The container will continue soon, after the database.')
