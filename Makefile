@@ -1,5 +1,6 @@
 PROJECT_ID := dockerosm
-COMPOSE_FILE := docker-compose.yml
+COMPOSE_FILE := docker-compose-web.yml
+# COMPOSE_FILE := docker-compose.yml
 
 
 build:
