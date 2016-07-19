@@ -1,4 +1,5 @@
 PROJECT_ID := dockerosm
+COMPOSE_FILE := docker-compose.yml
 
 
 build:
@@ -6,42 +7,42 @@ build:
 	@echo "------------------------------------------------------------------"
 	@echo "Building in production mode"
 	@echo "------------------------------------------------------------------"
-	@docker-compose -p $(PROJECT_ID) build
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) build
 
 run:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Running in production mode"
 	@echo "------------------------------------------------------------------"
-	@docker-compose -p $(PROJECT_ID) up -d --no-recreate
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) up -d --no-recreate
 
 rundev:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Running in DEVELOPMENT mode"
 	@echo "------------------------------------------------------------------"
-	@docker-compose -p $(PROJECT_ID) up
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) up
 
 stop:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Stopping in production mode"
 	@echo "------------------------------------------------------------------"
-	@docker-compose -p $(PROJECT_ID) stop
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) stop
 
 kill:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Killing in production mode"
 	@echo "------------------------------------------------------------------"
-	@docker-compose -p $(PROJECT_ID) kill
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) kill
 
 rm: kill
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Removing production instance!!! "
 	@echo "------------------------------------------------------------------"
-	@docker-compose -p $(PROJECT_ID) rm
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) rm
 
 ipdb:
 	@echo
