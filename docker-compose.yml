@@ -22,6 +22,8 @@ db:
     - PASS=docker
   volumes_from:
     - storage
+  ports:
+   - "5433:5432"
 
 imposm:
   build: docker-imposm3

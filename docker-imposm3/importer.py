@@ -127,6 +127,8 @@ class Importer(object):
                 for clip_file in listdir(clip_folder):
                     if clip_file == 'clip.shp':
                         self.clip_shape_file = join(clip_folder, clip_file)
+                    if clip_file == 'clip.sql':
+                        self.clip_sql_file = join(clip_folder, clip_file)
 
         if not self.osm_file:
             msg = 'OSM file *.pbf is missing in %s' % self.default['SETTINGS']
@@ -154,6 +156,7 @@ class Importer(object):
             self.error(msg)
         elif self.clip_shape_file and self.default['QGIS_STYLE']:
             self.info('%s detected for clipping.' % self.clip_shape_file)
+            self.info('%s detected for clipping.' % self.clip_sql_file)
         else:
             self.info('No *.shp detected in %s, so no clipping.' % self.default['SETTINGS'])
 

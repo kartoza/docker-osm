@@ -151,6 +151,7 @@ class Downloader(object):
                 sleep(2.0)
             else:
                 # Everything was fine, let's sleeping.
+                self.info('Creating diff successful : %s' % file_name)
                 self.info('Sleeping for %s seconds.' % self.default['TIME'])
                 sleep(float(self.default['TIME']))
 
