@@ -1,0 +1,117 @@
+storage:
+  image: ubuntu:latest
+  container_name: dockerosm_storage
+  hostname: storage
+  volumes:
+    # These are sharable to other containers
+    - ./settings:/home/settings
+    - /home/import_done
+    - /home/import_queue
+    - /home/cache
+    #- ./import_done:/home/import_done
+    #- ./import_queue:/home/import_queue
+    #- ./cache:/home/cache
+
+db:
+  # About the postgresql version, it should match in the dockerfile of docker-imposm3
+  image: kartoza/postgis:9.4-2.1
+  container_name: dockerosm_db
+  hostname: db
+  environment:
+    - USERNAME=docker
+    - PASS=docker
+  volumes_from:
+    - storage
+  ports:
+   - "5433:5432"
+
+imposm:
+  build: docker-imposm3
+  container_name: dockerosm_imposm
+  volumes_from:
+    - storage
+  links:
+    - db:db
+  environment:
+    - USER=docker
+    - PASSWORD=docker
+    - PORT=5432
+    - HOST=db
+    - DATABASE=gis
+    # seconds between 2 executions of the script
+    - TIME=120
+    # folder for settings (with *.json and *.sql)
+    - SETTINGS=settings
+    # folder for caching
+    - CACHE=cache
+    # folder for diff which has been imported
+    - IMPORT_DONE=import_done
+    # folder for diff which hasn't been imported yet
+    - IMPORT_QUEUE=import_queue
+    # it can be 3857
+    - SRID=4326
+    # see http://imposm.org/docs/imposm3/latest/tutorial.html#optimize
+    - OPTIMIZE=false
+    # see http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+    - DBSCHEMA_PRODUCTION=public
+    # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+    - DBSCHEMA_IMPORT=import
+    # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+    - DBSCHEMA_BACKUP=backup
+    # Install some styles if you are using the default mapping. It can be 'yes' or 'no'
+    - QGIS_STYLE=yes
+    # Use clip in the database
+    - CLIP=no
+
+
+osmupdate:
+  build: docker-osmupdate
+  container_name: dockerosm_osmupdate
+  volumes_from:
+    - storage
+  environment:
+    # These are all currently the defaults but listed here for your
+    # convenience if you want to change them
+    # the maximum time range to assamble a cumulated changefile.
+    - MAX_DAYS=100
+    # osmupdate uses a combination of minutely, hourly and daily changefiles. This value can be minute, hour, day or sporadic.
+    - DIFF=sporadic
+    # argument to determine the maximum number of parallely processed changefiles.
+    - MAX_MERGE=7
+    # define level for gzip compression. values between 1 (low compression but fast) and 9 (high compression but slow)
+    - COMPRESSION_LEVEL=1
+    # change the URL to use a custom URL to fetch regional file updates.
+    - BASE_URL=http://planet.openstreetmap.org/replication/
+    # folder for diff which hasn't been imported yet
+    - IMPORT_QUEUE=import_queue
+    # folder for diff which has been imported
+    - IMPORT_DONE=import_done
+    # seconds between 2 executions of the script
+    - TIME=120
+
+qgisserver:
+  image: kartoza/qgis-server:2.14
+  hostname: dockerosm_qgisserver
+  container_name: dockerosm_qgisserver
+  #volumes_from:
+  #  - btsync
+  volumes:
+    - ./logs:/var/log/apache2
+    - ./web:/web
+  links:
+    - db:db
+  ports:
+    - 8198:80
+  restart: on-failure:5
+
+#btsync:
+#  image: kartoza/btsync
+#  container_name:  dockerosm_btsync
+#  hostname: dockerosm_btsync
+#  volumes:
+#    - /web
+#  environment:
+#     This should be the read only key
+#    - SECRET=BBEBVOOYDPGO3GIIEQUMAIEJQNINOLX7V
+#    - DEVICE=readonly-
+#  restart: on-failure:5
