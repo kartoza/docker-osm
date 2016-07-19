@@ -23,7 +23,7 @@ db:
   volumes_from:
     - storage
   ports:
-   - "5433:5432"
+   - "5432:5432"
 
 imposm:
   build: docker-imposm3
