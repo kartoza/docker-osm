@@ -2,6 +2,7 @@ PROJECT_ID := dockerosm
 COMPOSE_FILE := docker-compose-web.yml
 # COMPOSE_FILE := docker-compose.yml
 
+.PHONY: logs
 
 build:
 	@echo
@@ -44,6 +45,20 @@ rm: kill
 	@echo "Removing production instance!!! "
 	@echo "------------------------------------------------------------------"
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) rm
+
+logs:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Logs"
+	@echo "------------------------------------------------------------------"
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) logs
+
+live_logs:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Live Logs"
+	@echo "------------------------------------------------------------------"
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) logs -f
 
 ipdb:
 	@echo
