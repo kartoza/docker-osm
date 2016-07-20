@@ -98,6 +98,7 @@ qgisserver:
   volumes:
     - ./logs:/var/log/apache2
     - ./web:/web
+    - ./settings:/web/settings
   links:
     - db:db
   ports:
