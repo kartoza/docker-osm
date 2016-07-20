@@ -18,9 +18,20 @@ wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_af
 
 ### Clipping
 
-You can put a shapefile in the clip folder. This shapefile will be used for clipping every features after the import.
+You can put a shapefile in the clip folder. This shapefile will be 
+used for clipping every features after the import.
+This file has to be named 'clip.shp'. When the database container is 
+running, import the shapefile in the database using the command : 
+'make import_clip'.
+
+You can remove the clip file : 'make remove_clip'.
 
 ### QGIS Styles
+
+
+'make import_styles'
+'make remove_styles'
+'make backup_styles'
 
 ### SQL Trigger
 
@@ -38,6 +49,11 @@ In production you should daemonize the services when bringing them up:
 ```
 docker-compose up -d
 ```
+
+You can check the timestamp of your database by reading the file :
+'settings/timestamp.txt'
+or you can use : 
+'make timestamp'
 
 ## Docker OSM Update
 

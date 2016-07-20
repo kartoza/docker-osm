@@ -215,12 +215,14 @@ class Importer(object):
 
     def _import_clip_function(self):
         """Create function clean_tables()."""
+        self.info('Import clip function.')
         command = ['psql']
         command += ['-h', self.default['HOST']]
         command += ['-U', self.default['USER']]
         command += ['-d', self.default['DATABASE']]
         command += ['-f', self.clip_sql_file]
         call(command)
+        self.info('!! Be sure to run \'make import_clip\' !!')
 
     def clip(self):
         """Perform clipping if the clip table is here."""
