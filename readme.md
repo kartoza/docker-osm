@@ -1,4 +1,4 @@
-#Docker-OSM
+# Docker-OSM
 
 ## Usage
 
@@ -87,7 +87,7 @@ http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
 ``docker run -v $('pwd')import-queue/:/home/import-queue -v $('pwd')base-pbf/:/home/base-pbf -v $('pwd')import-done/:/home/import-done -d osmupdate``
 
 With -e, you can add some settings :
- - MAX_DAYS = 100, the maximum time range to assamble a cumulated changefile.
+ - MAX_DAYS = 100, the maximum time range to assemble a cumulated changefile.
  - DIFF = sporadic, osmupdate uses a combination of minutely, hourly and daily changefiles. This value can be minute, hour, day or sporadic.
  - MAX_MERGE = 7, argument to determine the maximum number of parallely processed changefiles.
  - COMPRESSION_LEVEL = 1, define level for gzip compression. values between 1 (low compression but fast) and 9 (high compression but slow)
