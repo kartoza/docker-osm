@@ -155,6 +155,7 @@ class Downloader(object):
                 self.info('Sleeping for %s seconds.' % self.default['TIME'])
                 sleep(float(self.default['TIME']))
 
+
 if __name__ == '__main__':
     downloader = Downloader()
     downloader.overwrite_environment()
