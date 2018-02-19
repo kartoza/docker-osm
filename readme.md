@@ -16,6 +16,11 @@ cd settings
 wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
 ```
 
+### Updates
+
+You can configure the time interval in the docker-compose file. By default, it's two minutes.
+If you set the TIME variable to 0, no diff files will be imported. Only the first PBF file.
+
 ### Clipping
 
 You can put a shapefile in the clip folder. This shapefile will be 

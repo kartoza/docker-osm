@@ -39,7 +39,8 @@ imposm:
     - HOST=db
     - DATABASE=gis
     # seconds between 2 executions of the script
-    - TIME=120
+    # if 0, the no update will be done, only the first initial import from the PBF
+    - TIME=0
     # folder for settings (with *.json and *.sql)
     - SETTINGS=settings
     # folder for caching
@@ -87,4 +88,5 @@ osmupdate:
     # folder for diff which has been imported
     - IMPORT_DONE=import_done
     # seconds between 2 executions of the script
-    - TIME=120
+    # if 0, the no update will be done, only the first initial import from the PBF
+    - TIME=0

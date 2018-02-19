@@ -39,6 +39,7 @@ imposm:
     - HOST=db
     - DATABASE=gis
     # seconds between 2 executions of the script
+    # if 0, the no update will be done, only the first initial import from the PBF
     - TIME=120
     # folder for settings (with *.json and *.sql)
     - SETTINGS=settings
@@ -87,6 +88,7 @@ osmupdate:
     # folder for diff which has been imported
     - IMPORT_DONE=import_done
     # seconds between 2 executions of the script
+    # if 0, the no update will be done, only the first initial import from the PBF
     - TIME=120
 
 qgisserver:
