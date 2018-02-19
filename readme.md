@@ -1,5 +1,8 @@
 # Docker-OSM
 
+A docker compose project to setup an OSM PostGIS database with automatic updates from OSM periodically.
+The only file you need is a PBF file and run the docker compose project.
+
 ## Usage
 
 ### PBF File
@@ -16,6 +19,11 @@ cd settings
 wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
 ```
 
+### OSM Features
+
+In `settings`, you can edit the `mapping.json` to customize the PostGIS schema.
+You can find the documentation about the mapping configuration on the imposm website: https://imposm.org/docs/imposm3/latest/mapping.html
+
 ### Updates
 
 You can configure the time interval in the docker-compose file. By default, it's two minutes.
@@ -29,16 +37,22 @@ This file has to be named 'clip.shp'. When the database container is
 running, import the shapefile in the database using the command : 
 'make import_clip'.
 
-You can remove the clip file : 'make remove_clip'.
+You can remove the clip file : `make remove_clip`.
 
 ### QGIS Styles
 
+The database is provided with some default styles. These styles will be loaded automatically when loaded in QGIS.
+It's following the default OSM mapping from ImpOSM.
 
-'make import_styles'
-'make remove_styles'
-'make backup_styles'
+```
+make import_styles
+make remove_styles
+make backup_styles
+```
 
 ### SQL Trigger
+
+You can add PostGIS functions, triggers, materialized views in the SQL file.
 
 ### Build and run
 
@@ -60,7 +74,11 @@ You can check the timestamp of your database by reading the file :
 or you can use : 
 'make timestamp'
 
-## Docker OSM Update
+## In the background
+
+![architecture](https://raw.githubusercontent.com/kartoza/docker-osm/develop/docs/docker-compose.png)
+
+### Docker OSM Update
 
 This docker image when run will fetch on a regular interval any new diff file
 for all the changes that have happened in the world over the update interval.
@@ -105,7 +123,7 @@ With -e, you can add some settings :
 If you are using docker-compose, you can use these settings within the 
 ```docker-compose.yml``` file.
 
-## Docker ImpOSM3
+### Docker ImpOSM3
 
 This image will take care of doing the initial load for the selected region
 (e.g. planet, or a country such as Malawi) into your database. It will then
@@ -136,8 +154,6 @@ With -e, you can add some settings :
 You can adjust these preferences in the ```docker-compose.yml``` file provided
 in this repository.
 
-# Technical architecture
-![Lucidchart](https://www.lucidchart.com/publicSegments/view/55bca772-7b94-4589-b0f5-3e9c0a005a39/image.png)
 
 # Credits
 
