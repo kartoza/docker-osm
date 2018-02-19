@@ -60,6 +60,10 @@ class Downloader(object):
             if key in self.default.keys():
                 self.default[key] = environ[key]
 
+        if self.default['TIME'] == '0':
+            self.info('No more update to the database. Leaving.')
+            quit()
+
     def check_settings(self):
         """Perform various checking."""
         # Folders

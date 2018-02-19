@@ -325,8 +325,13 @@ class Importer(object):
                         self.error(msg)
 
             if len(listdir(self.default['IMPORT_QUEUE'])) == 0:
-                self.info('Sleeping for %s seconds.' % self.default['TIME'])
-                sleep(float(self.default['TIME']))
+                if self.default['TIME'] != '0':
+                    self.info(
+                        'Sleeping for %s seconds.' % self.default['TIME'])
+                    sleep(float(self.default['TIME']))
+                else:
+                    self.info('No more update to the database. Leaving.')
+                    quit()
 
 
 if __name__ == '__main__':
