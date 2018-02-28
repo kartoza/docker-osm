@@ -4,6 +4,11 @@ COMPOSE_FILE := docker-compose.yml
 
 .PHONY: logs
 
+###
+#    DOCKER MANAGEMENT
+###
+
+
 build:
 	@echo
 	@echo "------------------------------------------------------------------"
@@ -60,12 +65,11 @@ live_logs:
 	@echo "------------------------------------------------------------------"
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) logs -f
 
-ipdb:
-	@echo
-	@echo "------------------------------------------------------------------"
-	@echo "Database's IP"
-	@echo "------------------------------------------------------------------"
-	@docker inspect $(PROJECT_ID)_db | grep '"IPAddress"' | head -1 | cut -d '"' -f 4
+
+###
+#    CLIPPING
+###
+
 
 import_clip:
 	@echo
@@ -81,12 +85,22 @@ remove_clip:
 	@echo "------------------------------------------------------------------"
 	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'DROP TABLE IF EXISTS clip;'"
 
+###
+#    STATS
+###
+
+
 timestamp:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Timestamp"
 	@echo "------------------------------------------------------------------"
 	@docker exec -t -i $(PROJECT_ID)_imposm cat /home/settings/timestamp.txt
+
+###
+#    STYLES
+###
+
 
 import_styles: remove_styles
 	@echo

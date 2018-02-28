@@ -15,6 +15,7 @@ storage:
 db:
   # About the postgresql version, it should match in the dockerfile of docker-imposm3
   image: kartoza/postgis:9.4-2.1
+  # image: kartoza/postgis:10.0-2.4
   container_name: dockerosm_db
   hostname: db
   environment:
