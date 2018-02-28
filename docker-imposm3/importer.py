@@ -32,7 +32,7 @@ from sys import stderr
 class Importer(object):
 
     def __init__(self):
-        # Default values which can be overwritten.
+        # Default values which can be overwritten by environment variable.
         self.default = {
             'TIME': 120,
             'USER': 'docker',
@@ -78,8 +78,11 @@ class Importer(object):
                 self.default[key] = environ[key]
 
     def check_settings(self):
-        """Perform various checking."""
+        """Perform various checking.
 
+        This will run when the container is starting. If an error occurs, the
+        container will stop.
+        """
         # Check valid SRID.
         if self.default['SRID'] not in ['4326', '3857']:
             msg = 'SRID not supported : %s' % self.default['SRID']
@@ -113,7 +116,11 @@ class Importer(object):
             if f.endswith('.pbf'):
                 self.osm_file = join(self.default['SETTINGS'], f)
 
+            # JSON first then YML (YML is the new format)
             if f.endswith('.json'):
+                self.mapping_file = join(self.default['SETTINGS'], f)
+
+            if f.endswith('.yml'):
                 self.mapping_file = join(self.default['SETTINGS'], f)
 
             if f == 'post-pbf-import.sql':
@@ -135,7 +142,7 @@ class Importer(object):
             self.error(msg)
 
         if not self.mapping_file:
-            msg = 'Mapping file *.json is missing in %s' % self.default['SETTINGS']
+            msg = 'Mapping file *.yml is missing in %s' % self.default['SETTINGS']
             self.error(msg)
 
         if not self.post_import_file:
@@ -165,18 +172,21 @@ class Importer(object):
         sleep(45)
 
     def create_timestamp(self):
+        """Create the timestamp with the undefined value until the real one."""
         file_path = join(self.default['SETTINGS'], 'timestamp.txt')
         timestamp_file = open(file_path, 'w')
         timestamp_file.write('UNDEFINED\n')
         timestamp_file.close()
 
     def update_timestamp(self, database_timestamp):
+        """Update the current timestamp of the database."""
         file_path = join(self.default['SETTINGS'], 'timestamp.txt')
         timestamp_file = open(file_path, 'w')
         timestamp_file.write('%s\n' % database_timestamp)
         timestamp_file.close()
 
     def check_postgis(self):
+        """Test connection to PostGIS and create the URI."""
         try:
             connection = connect(
                 "dbname='%s' user='%s' host='%s' password='%s'" % (
@@ -196,6 +206,7 @@ class Importer(object):
             self.default['DATABASE'])
 
     def import_custom_sql(self):
+        """Import the custom SQL file into the database."""
         self.info('Running the post import SQL file.')
         command = ['psql']
         command += ['-h', self.default['HOST']]
@@ -205,6 +216,7 @@ class Importer(object):
         call(command)
 
     def import_qgis_styles(self):
+        """Import the QGIS styles into the database."""
         self.info('Installing QGIS styles.')
         command = ['psql']
         command += ['-h', self.default['HOST']]
@@ -214,7 +226,10 @@ class Importer(object):
         call(command)
 
     def _import_clip_function(self):
-        """Create function clean_tables()."""
+        """Create function clean_tables().
+
+        The user must import the clip shapefile to the database!
+        """
         self.info('Import clip function.')
         command = ['psql']
         command += ['-h', self.default['HOST']]
@@ -245,16 +260,22 @@ class Importer(object):
         return self.cursor.fetchone()[0]
 
     def run(self):
+        """First checker."""
         osm_tables = self.count_table('osm_%')
         if osm_tables < 1:
             # It means that the DB is empty. Let's import the PBF file.
             self._first_pbf_import()
         else:
-            self.info('The database is not empty. Let\'s import only diff files.')
+            self.info(
+                'The database is not empty. Let\'s import only diff files.')
 
-        self._import_diff()
+        if self.default['TIME'] != '0':
+            self._import_diff()
+        else:
+            self.info('No more update to the database. Leaving.')
 
     def _first_pbf_import(self):
+        """Run the first PBF import into the database."""
         command = ['imposm3', 'import', '-diff', '-deployproduction']
         command += ['-overwritecache', '-cachedir', self.default['CACHE']]
         command += ['-srid', self.default['SRID']]
@@ -325,13 +346,8 @@ class Importer(object):
                         self.error(msg)
 
             if len(listdir(self.default['IMPORT_QUEUE'])) == 0:
-                if self.default['TIME'] != '0':
-                    self.info(
-                        'Sleeping for %s seconds.' % self.default['TIME'])
-                    sleep(float(self.default['TIME']))
-                else:
-                    self.info('No more update to the database. Leaving.')
-                    quit()
+                self.info('Sleeping for %s seconds.' % self.default['TIME'])
+                sleep(float(self.default['TIME']))
 
 
 if __name__ == '__main__':

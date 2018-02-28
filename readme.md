@@ -19,15 +19,21 @@ cd settings
 wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
 ```
 
+You must put only one PBF file in the settings folder. Only the last one will be read.
+
 ### OSM Features
 
-In `settings`, you can edit the `mapping.json` to customize the PostGIS schema.
+In `settings`, you can edit the `mapping.yml` to customize the PostGIS schema.
 You can find the documentation about the mapping configuration on the imposm website: https://imposm.org/docs/imposm3/latest/mapping.html
+The default file in Docker-OSM is coming from https://raw.githubusercontent.com/omniscale/imposm3/master/example-mapping.yml
 
 ### Updates
 
 You can configure the time interval in the docker-compose file. By default, it's two minutes.
-If you set the TIME variable to 0, no diff files will be imported. Only the first PBF file.
+If you set the TIME variable to 0, no diff files will be imported.
+
+The default update stream is worldwide.
+So even if you imported a local PBF, if you don't set a clipping area, you will end with data from all over the world.
 
 ### Clipping
 
