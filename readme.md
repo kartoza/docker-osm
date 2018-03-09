@@ -80,6 +80,19 @@ You can check the timestamp of your database by reading the file :
 or you can use : 
 'make timestamp'
 
+### Display
+
+In the makefile, you can switch to another docker compose project.
+The other one includes QGIS Server. When it's running, you should be able to
+open, on the host(not in docker), the `index.html` file and see OSM and QGIS
+Server showing PostGIS tables. The webpage is using Leaflet.
+
+If you want to tweak the QGIS Project, you need to add a host in your in `/etc/hosts`:
+```
+127.0.0.1       db
+```
+Because in the docker-compose file, the link is made with the PostGIS database using the alias `db`.
+
 ## In the background
 
 ![architecture](https://raw.githubusercontent.com/kartoza/docker-osm/develop/docs/docker-compose.png)

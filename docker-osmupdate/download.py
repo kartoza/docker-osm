@@ -21,11 +21,10 @@
 
 from os.path import exists, join, isabs, abspath
 from os import listdir, environ
-from sys import exit
+from sys import exit, stderr
 from subprocess import call, Popen, PIPE
 from datetime import datetime
 from time import sleep
-from sys import stderr
 
 
 class Downloader(object):
@@ -47,7 +46,7 @@ class Downloader(object):
 
     @staticmethod
     def info(message):
-        print message
+        print(message)
 
     @staticmethod
     def error(message):
