@@ -19,14 +19,13 @@
  ***************************************************************************/
 """
 
-from sys import exit
+from sys import exit, stderr
 from os import environ, listdir
 from shutil import move
 from os.path import join, exists, abspath, isabs
 from psycopg2 import connect, OperationalError
 from subprocess import call
 from time import sleep
-from sys import stderr
 
 
 class Importer(object):
@@ -64,7 +63,7 @@ class Importer(object):
 
     @staticmethod
     def info(message):
-        print message
+        print(message)
 
     @staticmethod
     def error(message):

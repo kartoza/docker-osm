@@ -93,14 +93,14 @@ osmupdate:
     - TIME=120
 
 qgisserver:
-  image: kartoza/qgis-server:2.14
+  image: kartoza/qgis-server:2.18
   hostname: dockerosm_qgisserver
   container_name: dockerosm_qgisserver
   #volumes_from:
   #  - btsync
   volumes:
     - ./logs:/var/log/apache2
-    - ./web:/web
+    - ./web:/project
     - ./settings:/web/settings
   links:
     - db:db

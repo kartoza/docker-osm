@@ -1,12 +1,20 @@
 PROJECT_ID := dockerosm
-# COMPOSE_FILE := docker-compose-web.yml
 COMPOSE_FILE := docker-compose.yml
+# Uncomment the next line if you want to display data with Leaflet.
+# COMPOSE_FILE := docker-compose-web.yml
 
 .PHONY: logs
 
 ###
 #    DOCKER MANAGEMENT
 ###
+
+status:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Status in production mode"
+	@echo "------------------------------------------------------------------"
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) ps
 
 
 build:
