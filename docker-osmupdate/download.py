@@ -86,8 +86,10 @@ class Downloader(object):
         if not self.osm_file:
             msg = 'OSM file *.osm.pbf is missing in %s' % self.default['SETTINGS']
             self.error(msg)
+        else:
+            self.info('OSM PBF file: ' + self.osm_file)
 
-        self.info('The checkup is OK. The container will continue soon, after the database.')
+        self.info('The checkup is OK. The container will continue soon, after the database, in 45 seconds.')
         sleep(45)
 
     def _check_latest_timestamp(self):

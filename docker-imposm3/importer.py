@@ -86,16 +86,22 @@ class Importer(object):
         if self.default['SRID'] not in ['4326', '3857']:
             msg = 'SRID not supported : %s' % self.default['SRID']
             self.error(msg)
+        else:
+            self.info('Detect SRID: ' + self.default['SRID'])
 
         # Check valid CLIP.
         if self.default['CLIP'] not in ['yes', 'no']:
             msg = 'CLIP not supported : %s' % self.default['CLIP']
             self.error(msg)
+        else:
+            self.info('Clip: ' + self.default['CLIP'])
 
         # Check valid QGIS_STYLE.
         if self.default['QGIS_STYLE'] not in ['yes', 'no']:
             msg = 'QGIS_STYLE not supported : %s' % self.default['QGIS_STYLE']
             self.error(msg)
+        else:
+            self.info('Qgis style: ' + self.default['QGIS_STYLE'])
 
         # Check folders.
         folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'SETTINGS', 'CACHE']
@@ -139,21 +145,25 @@ class Importer(object):
         if not self.osm_file:
             msg = 'OSM file *.pbf is missing in %s' % self.default['SETTINGS']
             self.error(msg)
+        else:
+            self.info('OSM PBF file: ' + self.osm_file)
 
         if not self.mapping_file:
             msg = 'Mapping file *.yml is missing in %s' % self.default['SETTINGS']
             self.error(msg)
+        else:
+            self.info('Mapping: ' + self.osm_file)
 
         if not self.post_import_file:
             self.info('No custom SQL files *.sql detected in %s' % self.default['SETTINGS'])
         else:
-            self.info('%s detected for post import.' % self.post_import_file)
+            self.info('SQL Post Import: ' + self.post_import_file)
 
         if not self.qgis_style and self.default['QGIS_STYLE'] == 'yes':
             msg = 'qgis_style.sql is missing in %s and QGIS_STYLE = yes.' % self.default['SETTINGS']
             self.error(msg)
         elif self.qgis_style and self.default['QGIS_STYLE']:
-            self.info('%s detected for QGIS styling.' % self.qgis_style)
+            self.info('QGIS Style file: ' + self.qgis_style)
         else:
             self.info('Not using QGIS default styles.')
 
@@ -161,13 +171,13 @@ class Importer(object):
             msg = 'clip.shp is missing and CLIP = yes.'
             self.error(msg)
         elif self.clip_shape_file and self.default['QGIS_STYLE']:
-            self.info('%s detected for clipping.' % self.clip_shape_file)
-            self.info('%s detected for clipping.' % self.clip_sql_file)
+            self.info('Shapefile for clipping: ' + self.clip_shape_file)
+            self.info('SQL Clipping function: ' + self.clip_sql_file)
         else:
             self.info('No *.shp detected in %s, so no clipping.' % self.default['SETTINGS'])
 
         # In docker-compose, we should wait for the DB is ready.
-        self.info('The checkup is OK. The container will continue soon, after the database.')
+        self.info('The checkup is OK. The container will continue soon, after the database, in 45 seconds.')
         sleep(45)
 
     def create_timestamp(self):
