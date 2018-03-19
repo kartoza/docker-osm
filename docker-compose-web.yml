@@ -14,17 +14,18 @@ storage:
 
 db:
   # About the postgresql version, it should match in the dockerfile of docker-imposm3
-  image: kartoza/postgis:9.4-2.1
-  # image: kartoza/postgis:10.0-2.4
+  image: kartoza/postgis:9.6-2.4
   container_name: dockerosm_db
   hostname: db
   environment:
-    - USERNAME=docker
-    - PASS=docker
+    - POSTGRES_USER=docker
+    - POSTGRES_PASS=docker
+    - POSTGRES_DBNAME=gis
   volumes_from:
     - storage
-  ports:
-   - "5432:5432"
+# Uncomment to use the postgis database from outside the docker network
+#  ports:
+#   - "5432:5432"
 
 imposm:
   build: docker-imposm3
@@ -34,11 +35,11 @@ imposm:
   links:
     - db:db
   environment:
-    - USER=docker
-    - PASSWORD=docker
-    - PORT=5432
-    - HOST=db
-    - DATABASE=gis
+    - POSTGRES_USER=docker
+    - POSTGRES_PASS=docker
+    - POSTGRES_DBNAME=gis
+    - POSTGRES_PORT=5432
+    - POSTGRES_HOST=db
     # seconds between 2 executions of the script
     # if 0, then no update will be done, only the first initial import from the PBF
     - TIME=120

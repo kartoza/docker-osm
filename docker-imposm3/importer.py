@@ -34,11 +34,11 @@ class Importer(object):
         # Default values which can be overwritten by environment variable.
         self.default = {
             'TIME': 120,
-            'USER': 'docker',
-            'PASSWORD': 'docker',
-            'DATABASE': 'gis',
-            'HOST': 'db',
-            'PORT': '5432',
+            'POSTGRES_USER': 'docker',
+            'POSTGRES_PASS': 'docker',
+            'POSTGRES_DBNAME': 'gis',
+            'POSTGRES_HOST': 'db',
+            'POSTGRES_PORT': '5432',
             'SETTINGS': 'settings',
             'CACHE': 'cache',
             'IMPORT_DONE': 'import_done',
@@ -189,28 +189,28 @@ class Importer(object):
         try:
             connection = connect(
                 "dbname='%s' user='%s' host='%s' password='%s'" % (
-                    self.default['DATABASE'],
-                    self.default['USER'],
-                    self.default['HOST'],
-                    self.default['PASSWORD']))
+                    self.default['POSTGRES_DBNAME'],
+                    self.default['POSTGRES_USER'],
+                    self.default['POSTGRES_HOST'],
+                    self.default['POSTGRES_PASS']))
             self.cursor = connection.cursor()
         except OperationalError as e:
             print >> stderr, e
             exit()
 
         self.postgis_uri = 'postgis://%s:%s@%s/%s' % (
-            self.default['USER'],
-            self.default['PASSWORD'],
-            self.default['HOST'],
-            self.default['DATABASE'])
+            self.default['POSTGRES_USER'],
+            self.default['POSTGRES_PASS'],
+            self.default['POSTGRES_HOST'],
+            self.default['POSTGRES_DBNAME'])
 
     def import_custom_sql(self):
         """Import the custom SQL file into the database."""
         self.info('Running the post import SQL file.')
         command = ['psql']
-        command += ['-h', self.default['HOST']]
-        command += ['-U', self.default['USER']]
-        command += ['-d', self.default['DATABASE']]
+        command += ['-h', self.default['POSTGRES_HOST']]
+        command += ['-U', self.default['POSTGRES_USER']]
+        command += ['-d', self.default['POSTGRES_DBNAME']]
         command += ['-f', self.post_import_file]
         call(command)
 
@@ -218,9 +218,9 @@ class Importer(object):
         """Import the QGIS styles into the database."""
         self.info('Installing QGIS styles.')
         command = ['psql']
-        command += ['-h', self.default['HOST']]
-        command += ['-U', self.default['USER']]
-        command += ['-d', self.default['DATABASE']]
+        command += ['-h', self.default['POSTGRES_HOST']]
+        command += ['-U', self.default['POSTGRES_USER']]
+        command += ['-d', self.default['POSTGRES_DBNAME']]
         command += ['-f', self.qgis_style]
         call(command)
 
@@ -231,9 +231,9 @@ class Importer(object):
         """
         self.info('Import clip function.')
         command = ['psql']
-        command += ['-h', self.default['HOST']]
-        command += ['-U', self.default['USER']]
-        command += ['-d', self.default['DATABASE']]
+        command += ['-h', self.default['POSTGRES_HOST']]
+        command += ['-U', self.default['POSTGRES_USER']]
+        command += ['-d', self.default['POSTGRES_DBNAME']]
         command += ['-f', self.clip_sql_file]
         call(command)
         self.info('!! Be sure to run \'make import_clip\' !!')
@@ -243,9 +243,9 @@ class Importer(object):
         if self.count_table('clip') == 1:
             self.info('Clipping')
             command = ['psql']
-            command += ['-h', self.default['HOST']]
-            command += ['-U', self.default['USER']]
-            command += ['-d', self.default['DATABASE']]
+            command += ['-h', self.default['POSTGRES_HOST']]
+            command += ['-U', self.default['POSTGRES_USER']]
+            command += ['-d', self.default['POSTGRES_DBNAME']]
             command += ['-c', 'SELECT clean_tables();']
             call(command)
 

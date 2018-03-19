@@ -155,10 +155,10 @@ The container will look for an OSM file (*.pbf) and its state file
 
 With -e, you can add some settings :
  - TIME = 120, seconds between 2 executions of the script
- - USER = docker, default user
- - PASSWORD = docker, default password
- - HOST = db
- - PORT = 5432
+ - POSTGRES_USER = docker, default user
+ - POSTGRES_PASS = docker, default password
+ - POSTGRES_HOST = db
+ - POSTGRES_PORT = 5432
  - SETTINGS = settings, folder for settings (with *.json and *.sql)
  - CACHE = cache, folder for caching
  - BASE_PBF = base_pbf, folder the OSM file
