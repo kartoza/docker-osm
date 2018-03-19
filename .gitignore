@@ -8,6 +8,7 @@ settings/*.pbf
 BACKUP-STYLES.sql
 settings/last.state.txt
 settings/timestamp.txt
+settings/clip/clip.cpg
 settings/clip/clip.dbf
 settings/clip/clip.prj
 settings/clip/clip.qpj
