@@ -296,7 +296,7 @@ class Importer(object):
 
         if self.post_import_file or self.qgis_style:
             # Set the password for psql
-            environ['PGPASSWORD'] = self.default['PASSWORD']
+            environ['PGPASSWORD'] = self.default['POSTGRES_PASS']
 
         if self.post_import_file:
             self.import_custom_sql()
