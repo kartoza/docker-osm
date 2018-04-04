@@ -3,6 +3,17 @@
 A docker compose project to setup an OSM PostGIS database with automatic updates from OSM periodically.
 The only file you need is a PBF file and run the docker compose project.
 
+## Docker cloud
+
+Dockerfiles are executed on https://cloud.docker.com
+```bash
+docker pull etrimaille/docker-osm:imposm-latest
+docker pull etrimaille/docker-osm:osmupdate-latest
+```
+
+You need to copy/paste the docker-compose project and use the images hosted on the internet.
+This is useful if you want to integrate Docker-OSM in your existing docker-compose project.
+
 ## Usage
 
 ### PBF File
