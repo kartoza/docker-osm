@@ -28,6 +28,7 @@ db:
 #   - "5432:5432"
 
 imposm:
+  # image: etrimaille/docker-osm:imposm-latest
   build: docker-imposm3
   container_name: dockerosm_imposm
   volumes_from:
@@ -68,6 +69,7 @@ imposm:
 
 
 osmupdate:
+  # image: etrimaille/docker-osm:osmupdate-latest
   build: docker-osmupdate
   container_name: dockerosm_osmupdate
   volumes_from:
