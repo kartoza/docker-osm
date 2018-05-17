@@ -285,7 +285,7 @@ class Importer(object):
 
     def _first_pbf_import(self):
         """Run the first PBF import into the database."""
-        command = ['imposm3', 'import', '-diff', '-deployproduction']
+        command = ['imposm', 'import', '-diff', '-deployproduction']
         command += ['-overwritecache', '-cachedir', self.default['CACHE']]
         command += ['-srid', self.default['SRID']]
         command += ['-dbschema-production',

@@ -28,4 +28,4 @@ RUN gcc -x c - -O3 -o osmconvert osmconvert.c -lz
 # Add the python script which will call osmupdate
 ADD download.py /home/download.py
 
-CMD ["python", "-u", "/home/download.py"]
+CMD ["python3", "-u", "/home/download.py"]
