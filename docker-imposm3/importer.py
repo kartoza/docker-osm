@@ -67,13 +67,13 @@ class Importer(object):
 
     @staticmethod
     def error(message):
-        print >> stderr, message
+        print(stderr.write(message))
         exit()
 
     def overwrite_environment(self):
         """Overwrite default values from the environment."""
-        for key in environ.keys():
-            if key in self.default.keys():
+        for key in list(environ.keys()):
+            if key in list(self.default.keys()):
                 self.default[key] = environ[key]
 
     def check_settings(self):
@@ -205,7 +205,8 @@ class Importer(object):
                     self.default['POSTGRES_PASS']))
             self.cursor = connection.cursor()
         except OperationalError as e:
-            print >> stderr, e
+            print(stderr.write(e))
+
             exit()
 
         self.postgis_uri = 'postgis://%s:%s@%s/%s' % (
@@ -325,7 +326,7 @@ class Importer(object):
             if len(import_queue) > 0:
                 for diff in import_queue:
                     self.info('Importing diff %s' % diff)
-                    command = ['imposm3', 'diff']
+                    command = ['imposm', 'diff']
                     command += ['-cachedir', self.default['CACHE']]
                     command += ['-dbschema-production', self.default['DBSCHEMA_PRODUCTION']]
                     command += ['-dbschema-import', self.default['DBSCHEMA_IMPORT']]
@@ -337,6 +338,7 @@ class Importer(object):
                     command += [join(self.default['IMPORT_QUEUE'], diff)]
 
                     self.info(' '.join(command))
+
                     if call(command) == 0:
                         move(
                             join(self.default['IMPORT_QUEUE'], diff),

@@ -50,7 +50,7 @@ class Downloader(object):
 
     @staticmethod
     def error(message):
-        print(message, file=stderr)
+        print(stderr.write(message))
         exit()
 
     def overwrite_environment(self):
@@ -122,7 +122,11 @@ class Downloader(object):
 
         # Removing some \ in the timestamp.
 
-        timestamp = timestamp.decode("utf-8").replace('\\', '')
+        try:
+            timestamp = timestamp.decode("utf-8").replace('\\', '')
+        except AttributeError:
+            timestamp = timestamp.replace('\\', '')
+            pass
 
         return timestamp
 
