@@ -24,12 +24,12 @@ db:
   volumes_from:
     - storage
 # Uncomment to use the postgis database from outside the docker network
-#  ports:
-#   - "5432:5432"
+  ports:
+    - "5432:5432"
 
 imposm:
-  # image: etrimaille/docker-osm:imposm-latest
-  build: docker-imposm3
+  image: simo/docker-osm:imposm-latest
+  # build: docker-imposm3
   container_name: dockerosm_imposm
   volumes_from:
     - storage
@@ -65,12 +65,13 @@ imposm:
     # Install some styles if you are using the default mapping. It can be 'yes' or 'no'
     - QGIS_STYLE=yes
     # Use clip in the database
-    - CLIP=no
+    - CLIP=yes
+  #entrypoint: tail -f /dev/null
 
 
 osmupdate:
-  # image: etrimaille/docker-osm:osmupdate-latest
-  build: docker-osmupdate
+  image: simo/docker-osm:osmupdate-xenial
+  # build: docker-osmupdate
   container_name: dockerosm_osmupdate
   volumes_from:
     - storage
@@ -94,3 +95,4 @@ osmupdate:
     # seconds between 2 executions of the script
     # if 0, then no update will be done, only the first initial import from the PBF
     - TIME=120
+  #entrypoint: tail -f /dev/null
