@@ -1,5 +1,5 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
-FROM ubuntu:latest
+FROM ubuntu:xenial
 MAINTAINER Etienne Trimaille<etienne@kartoza.com>
 
 RUN  export DEBIAN_FRONTEND=noninteractive
