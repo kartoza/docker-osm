@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   storage:
-    image: ubuntu:latest
+    image: ubuntu:bionic
     volumes:
       # These are sharable to other containers
       - ./settings:/home/settings
@@ -21,8 +21,8 @@ services:
     volumes_from:
       - storage
   # Uncomment to use the postgis database from outside the docker network
-    ports:
-      - "35432:5432"
+    #ports:
+      #- "35432:5432"
     healthcheck:
         test: "exit 0"
 
