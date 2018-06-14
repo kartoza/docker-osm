@@ -1,96 +1,94 @@
-storage:
-  image: ubuntu:latest
-  container_name: dockerosm_storage
-  hostname: storage
-  volumes:
-    # These are sharable to other containers
-    - ./settings:/home/settings
-    - /home/import_done
-    - /home/import_queue
-    - /home/cache
-    #- ./import_done:/home/import_done
-    #- ./import_queue:/home/import_queue
-    #- ./cache:/home/cache
+version: '2.1'
 
-db:
-  # About the postgresql version, it should match in the dockerfile of docker-imposm3
-  image: kartoza/postgis:9.6-2.4
-  container_name: dockerosm_db
-  hostname: db
-  environment:
-    - POSTGRES_USER=docker
-    - POSTGRES_PASS=docker
-    - POSTGRES_DBNAME=gis
-  volumes_from:
-    - storage
-# Uncomment to use the postgis database from outside the docker network
-#  ports:
-#   - "5432:5432"
+services:
+  storage:
+    image: ubuntu:bionic
+    volumes:
+      # These are sharable to other containers
+      - ./settings:/home/settings
+      - /home/import_done
+      - /home/import_queue
+      - /home/cache
 
-imposm:
-  # image: etrimaille/docker-osm:imposm-latest
-  build: docker-imposm3
-  container_name: dockerosm_imposm
-  volumes_from:
-    - storage
-  links:
-    - db:db
-  environment:
-    - POSTGRES_USER=docker
-    - POSTGRES_PASS=docker
-    - POSTGRES_DBNAME=gis
-    - POSTGRES_PORT=5432
-    - POSTGRES_HOST=db
-    # seconds between 2 executions of the script
-    # if 0, then no update will be done, only the first initial import from the PBF
-    - TIME=120
-    # folder for settings (with *.json and *.sql)
-    - SETTINGS=settings
-    # folder for caching
-    - CACHE=cache
-    # folder for diff which has been imported
-    - IMPORT_DONE=import_done
-    # folder for diff which hasn't been imported yet
-    - IMPORT_QUEUE=import_queue
-    # it can be 3857
-    - SRID=4326
-    # see http://imposm.org/docs/imposm3/latest/tutorial.html#optimize
-    - OPTIMIZE=false
-    # see http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
-    - DBSCHEMA_PRODUCTION=public
-    # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
-    - DBSCHEMA_IMPORT=import
-    # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
-    - DBSCHEMA_BACKUP=backup
-    # Install some styles if you are using the default mapping. It can be 'yes' or 'no'
-    - QGIS_STYLE=yes
-    # Use clip in the database
-    - CLIP=no
+  db:
+    # About the postgresql version, it should match in the dockerfile of docker-imposm3
+    image: kartoza/postgis:9.6-2.4
+    hostname: db
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - POSTGRES_DBNAME=gis
+    volumes_from:
+      - storage
+  # Uncomment to use the postgis database from outside the docker network
+    #ports:
+      #- "35432:5432"
+    healthcheck:
+        test: "exit 0"
+
+  imposm:
+    # image: etrimaille/docker-osm:imposm-latest
+    build: docker-imposm3
+    volumes_from:
+      - storage
+    depends_on:
+        db:
+          condition: service_healthy
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - POSTGRES_DBNAME=gis
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=db
+      # seconds between 2 executions of the script
+      # if 0, then no update will be done, only the first initial import from the PBF
+      - TIME=120
+      # folder for settings (with *.json and *.sql)
+      - SETTINGS=settings
+      # folder for caching
+      - CACHE=cache
+      # folder for diff which has been imported
+      - IMPORT_DONE=import_done
+      # folder for diff which hasn't been imported yet
+      - IMPORT_QUEUE=import_queue
+      # it can be 3857
+      - SRID=4326
+      # see http://imposm.org/docs/imposm3/latest/tutorial.html#optimize
+      - OPTIMIZE=false
+      # see http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+      - DBSCHEMA_PRODUCTION=public
+      # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+      - DBSCHEMA_IMPORT=import
+      # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
+      - DBSCHEMA_BACKUP=backup
+      # Install some styles if you are using the default mapping. It can be 'yes' or 'no'
+      - QGIS_STYLE=yes
+      # Use clip in the database
+      - CLIP=no
 
 
-osmupdate:
-  # image: etrimaille/docker-osm:osmupdate-latest
-  build: docker-osmupdate
-  container_name: dockerosm_osmupdate
-  volumes_from:
-    - storage
-  environment:
-    # These are all currently the defaults but listed here for your
-    # convenience if you want to change them
-    # the maximum time range to assemble a cumulated changefile.
-    - MAX_DAYS=100
-    # osmupdate uses a combination of minutely, hourly and daily changefiles. This value can be minute, hour, day or sporadic.
-    - DIFF=sporadic
-    # argument to determine the maximum number of parallely processed changefiles.
-    - MAX_MERGE=7
-    # define level for gzip compression. values between 1 (low compression but fast) and 9 (high compression but slow)
-    - COMPRESSION_LEVEL=1
-    # change the URL to use a custom URL to fetch regional file updates.
-    - BASE_URL=http://planet.openstreetmap.org/replication/
-    # folder for diff which hasn't been imported yet
-    - IMPORT_QUEUE=import_queue
-    # folder for diff which has been imported
-    - IMPORT_DONE=import_done
-    # seconds between 2 executions of the script
-    # if 0, then no update will be done, only the first initial import from the PBF
-    - TIME=120
+  osmupdate:
+    build: docker-osmupdate
+    volumes_from:
+      - storage
+    environment:
+      # These are all currently the defaults but listed here for your
+      # convenience if you want to change them
+      # the maximum time range to assemble a cumulated changefile.
+      - MAX_DAYS=100
+      # osmupdate uses a combination of minutely, hourly and daily changefiles. This value can be minute, hour, day or sporadic.
+      - DIFF=sporadic
+      # argument to determine the maximum number of parallely processed changefiles.
+      - MAX_MERGE=7
+      # define level for gzip compression. values between 1 (low compression but fast) and 9 (high compression but slow)
+      - COMPRESSION_LEVEL=1
+      # change the URL to use a custom URL to fetch regional file updates.
+      - BASE_URL=http://planet.openstreetmap.org/replication/
+      # folder for diff which hasn't been imported yet
+      - IMPORT_QUEUE=import_queue
+      # folder for diff which has been imported
+      - IMPORT_DONE=import_done
+      # seconds between 2 executions of the script
+      # if 0, then no update will be done, only the first initial import from the PBF
+      - TIME=120
+

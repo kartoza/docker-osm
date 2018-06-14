@@ -50,13 +50,13 @@ class Downloader(object):
 
     @staticmethod
     def error(message):
-        print >> stderr, message
+        print(stderr.write(message))
         exit()
 
     def overwrite_environment(self):
         """Overwrite default values from the environment."""
-        for key in environ.keys():
-            if key in self.default.keys():
+        for key in list(environ.keys()):
+            if key in list(self.default.keys()):
                 self.default[key] = environ[key]
 
         if self.default['TIME'] == '0':
@@ -121,7 +121,13 @@ class Downloader(object):
                 self.info('Timestamp from the original state file : %s' % timestamp)
 
         # Removing some \ in the timestamp.
-        timestamp = timestamp.replace('\\', '')
+
+        try:
+            timestamp = timestamp.decode("utf-8").replace('\\', '')
+        except AttributeError:
+            timestamp = timestamp.replace('\\', '')
+            pass
+
         return timestamp
 
     def download(self):

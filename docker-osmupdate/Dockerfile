@@ -13,7 +13,7 @@ ADD 71-apt-cacher-ng /etc/apt/apt.conf.d/71-apt-cacher-ng
 
 # RUN echo "deb http://archive.ubuntu.com/ubuntu trusty main universe" > /etc/apt/sources.list
 RUN apt-get -y update
-RUN apt-get -y install ca-certificates rpl pwgen
+RUN apt-get -y install ca-certificates rpl pwgen python3
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
@@ -28,4 +28,4 @@ RUN gcc -x c - -O3 -o osmconvert osmconvert.c -lz
 # Add the python script which will call osmupdate
 ADD download.py /home/download.py
 
-CMD ["python", "-u", "/home/download.py"]
+CMD ["python3", "-u", "/home/download.py"]

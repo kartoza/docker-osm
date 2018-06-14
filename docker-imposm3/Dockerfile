@@ -1,9 +1,9 @@
 FROM golang:1.9
 MAINTAINER Etienne Trimaille <etienne@kartoza.com>
 
-RUN apt-get update && apt-get install -y python-pip \
+RUN apt-get update && apt-get install -y python3-pip \
       libprotobuf-dev libleveldb-dev libgeos-dev \
-      libpq-dev python-dev postgresql-client-9.6 python-setuptools \
+      libpq-dev python3-dev postgresql-client-9.6 python-setuptools \
       --no-install-recommends
 
 RUN ln -s /usr/lib/libgeos_c.so /usr/lib/libgeos.so
@@ -14,9 +14,9 @@ RUN git clone https://github.com/omniscale/imposm3 src/github.com/omniscale/impo
 RUN cd src/github.com/omniscale/imposm3 && make update_version && go install ./cmd/imposm/
 
 ADD requirements.txt /home/requirements.txt
-RUN pip install -r /home/requirements.txt
+RUN pip3 install -r /home/requirements.txt
 
 ADD importer.py /home/
 
 WORKDIR /home
-CMD ["python", "-u", "/home/importer.py"]
+CMD ["python3", "-u", "/home/importer.py"]
