@@ -1,124 +1,19 @@
-storage:
-  image: ubuntu:latest
-  container_name: dockerosm_storage
-  hostname: storage
-  volumes:
-    # These are sharable to other containers
-    - ./settings:/home/settings
-    - /home/import_done
-    - /home/import_queue
-    - /home/cache
-    #- ./import_done:/home/import_done
-    #- ./import_queue:/home/import_queue
-    #- ./cache:/home/cache
+# Usage:
 
-db:
-  # About the postgresql version, it should match in the dockerfile of docker-imposm3
-  image: kartoza/postgis:9.6-2.4
-  container_name: dockerosm_db
-  hostname: db
-  environment:
-    - POSTGRES_USER=docker
-    - POSTGRES_PASS=docker
-    - POSTGRES_DBNAME=gis
-  volumes_from:
-    - storage
-# Uncomment to use the postgis database from outside the docker network
-#  ports:
-#   - "5432:5432"
+# docker-compose -f docker-compose.yml -f docker-compose-web.yml
 
-imposm:
-  # image: kartoza/docker-osm:imposm-latest
-  build: docker-imposm3
-  container_name: dockerosm_imposm
-  volumes_from:
-    - storage
-  links:
-    - db:db
-  environment:
-    - POSTGRES_USER=docker
-    - POSTGRES_PASS=docker
-    - POSTGRES_DBNAME=gis
-    - POSTGRES_PORT=5432
-    - POSTGRES_HOST=db
-    # seconds between 2 executions of the script
-    # if 0, then no update will be done, only the first initial import from the PBF
-    - TIME=120
-    # folder for settings (with *.json and *.sql)
-    - SETTINGS=settings
-    # folder for caching
-    - CACHE=cache
-    # folder for diff which has been imported
-    - IMPORT_DONE=import_done
-    # folder for diff which hasn't been imported yet
-    - IMPORT_QUEUE=import_queue
-    # it can be 3857
-    - SRID=4326
-    # see http://imposm.org/docs/imposm3/latest/tutorial.html#optimize
-    - OPTIMIZE=false
-    # see http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
-    - DBSCHEMA_PRODUCTION=public
-    # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
-    - DBSCHEMA_IMPORT=import
-    # http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables
-    - DBSCHEMA_BACKUP=backup
-    # Install some styles if you are using the default mapping. It can be 'yes' or 'no'
-    - QGIS_STYLE=yes
-    # Use clip in the database
-    - CLIP=no
+version: '2.1'
 
-
-osmupdate:
-  # image: kartoza/docker-osm:osmupdate-latest
-  build: docker-osmupdate
-  container_name: dockerosm_osmupdate
-  volumes_from:
-    - storage
-  environment:
-    # These are all currently the defaults but listed here for your
-    # convenience if you want to change them
-    # the maximum time range to assemble a cumulated changefile.
-    - MAX_DAYS=100
-    # osmupdate uses a combination of minutely, hourly and daily changefiles. This value can be minute, hour, day or sporadic.
-    - DIFF=sporadic
-    # argument to determine the maximum number of parallely processed changefiles.
-    - MAX_MERGE=7
-    # define level for gzip compression. values between 1 (low compression but fast) and 9 (high compression but slow)
-    - COMPRESSION_LEVEL=1
-    # change the URL to use a custom URL to fetch regional file updates.
-    - BASE_URL=http://planet.openstreetmap.org/replication/
-    # folder for diff which hasn't been imported yet
-    - IMPORT_QUEUE=import_queue
-    # folder for diff which has been imported
-    - IMPORT_DONE=import_done
-    # seconds between 2 executions of the script
-    # if 0, then no update will be done, only the first initial import from the PBF
-    - TIME=120
-
-qgisserver:
-  image: kartoza/qgis-server:2.18
-  hostname: dockerosm_qgisserver
-  container_name: dockerosm_qgisserver
-  #volumes_from:
-  #  - btsync
-  volumes:
-    - ./logs:/var/log/apache2
-    - ./web:/project
-    - ./settings:/web/settings
-  links:
-    - db:db
-  ports:
-    - 8198:80
-  restart: on-failure:5
-
-#btsync:
-#  image: kartoza/btsync
-#  container_name:  dockerosm_btsync
-#  hostname: dockerosm_btsync
-#  volumes:
-#    - /web
-#  environment:
-#     This should be the read only key
-#    - SECRET=BBEBVOOYDPGO3GIIEQUMAIEJQNINOLX7V
-#    - DEVICE=readonly-
-#  restart: on-failure:5
+services:
+  qgisserver:
+    image: kartoza/qgis-server:2.18
+    hostname: dockerosm_qgisserver
+    volumes:
+      - ./logs:/var/log/apache2
+      - ./web:/project
+      - ./settings:/web/settings
+    links:
+      - db:db
+    ports:
+      - 8198:80
+    restart: unless-stopped

@@ -1,18 +1,21 @@
 # Docker-OSM
 
-A docker compose project to setup an OSM PostGIS database with automatic updates from OSM periodically.
+A docker compose project to setup an OSM PostGIS database with automatic
+updates from OSM periodically.
 The only file you need is a PBF file and run the docker compose project.
 
 ## Docker cloud
 
 Dockerfiles are executed on https://cloud.docker.com
+
 ```bash
 docker pull kartoza/docker-osm:imposm-latest
 docker pull kartoza/docker-osm:osmupdate-latest
 ```
 
-You need to copy/paste the docker-compose project and use the images hosted on the internet.
-This is useful if you want to integrate Docker-OSM in your existing docker-compose project.
+To run you can use the provided docker-compose project and use the images
+hosted on the internet. This is useful if you want to integrate Docker-OSM in
+your existing docker-compose project.
 
 ## Usage
 
@@ -35,16 +38,19 @@ You must put only one PBF file in the settings folder. Only the last one will be
 ### OSM Features
 
 In `settings`, you can edit the `mapping.yml` to customize the PostGIS schema.
-You can find the documentation about the mapping configuration on the imposm website: https://imposm.org/docs/imposm3/latest/mapping.html
-The default file in Docker-OSM is coming from https://raw.githubusercontent.com/omniscale/imposm3/master/example-mapping.yml
+You can find the documentation about the mapping configuration on the imposm
+website: https://imposm.org/docs/imposm3/latest/mapping.html
+The default file in Docker-OSM is coming from
+https://raw.githubusercontent.com/omniscale/imposm3/master/example-mapping.yml
 
 ### Updates
 
-You can configure the time interval in the docker-compose file. By default, it's two minutes.
-If you set the TIME variable to 0, no diff files will be imported.
+You can configure the time interval in the docker-compose file. By default,
+it's two minutes. If you set the TIME variable to 0, no diff files will be
+imported.
 
-The default update stream is worldwide.
-So even if you imported a local PBF, if you don't set a clipping area, you will end with data from all over the world.
+The default update stream is worldwide. So even if you imported a local PBF, if
+you don't set a clipping area, you will end with data from all over the world.
 
 ### Clipping
 
@@ -58,8 +64,9 @@ You can remove the clip file : `make remove_clip`.
 
 ### QGIS Styles
 
-The database is provided with some default styles. These styles will be loaded automatically when loaded in QGIS.
-It's following the default OSM mapping from ImpOSM.
+The database is provided with some default styles. These styles will be loaded
+automatically when loaded in QGIS. It's following the default OSM mapping from
+ImpOSM.
 
 ```
 make import_styles
@@ -87,9 +94,9 @@ docker-compose up -d
 ```
 
 You can check the timestamp of your database by reading the file :
-'settings/timestamp.txt'
-or you can use : 
-'make timestamp'
+``settings/timestamp.txt`` or you can use : 
+
+``make timestamp``
 
 ### Display
 
@@ -110,8 +117,8 @@ Because in the docker-compose file, the link is made with the PostGIS database u
 
 ### Docker OSM Update
 
-This docker image when run will fetch on a regular interval any new diff file
-for all the changes that have happened in the world over the update interval.
+This docker image, when run will regularly fetch any new diff file for all the
+changes that have happened in the world over the update interval.
 
 You can also specify a custom url for fetching the diff if you wish to retrieve
 regional diffs rather than the global one.
@@ -120,7 +127,7 @@ You can specify a polygonal area for the diff so that it will only apply feature
 from the diff that fall within that area. For example providing a polygon of the
 borders of Malawi will result in only Malawi features being extracted from the diff.
 
-Note that the diff retrieved and options specified here are not related to the
+**Note:** the diff retrieved and options specified here are not related to the
 initial base map used - so for example if your initial base map is for Malawi and
 you specify a diff area in Botswana, updated features in Botswana will be applied
 to your base map which only includes features from Malawi. For this reason, take
@@ -140,6 +147,8 @@ http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
 ``docker run -v $('pwd')import-queue/:/home/import-queue -v $('pwd')base-pbf/:/home/base-pbf -v $('pwd')import-done/:/home/import-done -d osmupdate``
 
 With -e, you can add some settings :
+
+```
  - MAX_DAYS = 100, the maximum time range to assemble a cumulated changefile.
  - DIFF = sporadic, osmupdate uses a combination of minutely, hourly and daily changefiles. This value can be minute, hour, day or sporadic.
  - MAX_MERGE = 7, argument to determine the maximum number of parallely processed changefiles.
@@ -149,6 +158,7 @@ With -e, you can add some settings :
  - IMPORT_DONE = import_done
  - OSM_PBF = osm_pbf
  - TIME = 120, seconds between two executions of the script
+```
 
 If you are using docker-compose, you can use these settings within the 
 ```docker-compose.yml``` file.
@@ -165,6 +175,8 @@ The container will look for an OSM file (*.pbf) and its state file
 (*.state.txt) in BASE_PBF.
 
 With -e, you can add some settings :
+
+```
  - TIME = 120, seconds between 2 executions of the script
  - POSTGRES_USER = docker, default user
  - POSTGRES_PASS = docker, default password
@@ -180,10 +192,19 @@ With -e, you can add some settings :
  - DBSCHEMA_PRODUCTION = public, check (Imposm)[http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables]
  - DBSCHEMA_IMPORT = import, check (Imposm)[http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables]
  - DBSCHEMA_BACKUP = backup, check (Imposm)[http://imposm.org/docs/imposm3/latest/tutorial.html#deploy-production-tables]
+```
 
 You can adjust these preferences in the ```docker-compose.yml``` file provided
 in this repository.
 
+# QGIS Server
+
+You can run a QGIS Server front end to the OSM mirroir by using the provided
+docker-compose-web.yml file. For example:
+
+```
+docker-compose -f docker-compose.yml -f docker-compose-web.yml qgisserver up
+```
 
 # Credits
 

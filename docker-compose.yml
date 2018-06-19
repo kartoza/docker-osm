@@ -1,15 +1,12 @@
 version: '2.1'
 
-services:
-  storage:
-    image: ubuntu:18.04
-    volumes:
-      # These are sharable to other containers
-      - ./settings:/home/settings
-      - /home/import_done
-      - /home/import_queue
-      - /home/cache
+volumes:
+  osm-postgis-data:
+  import_done:
+  import_queue:
+  cache:
 
+services:
   db:
     # About the postgresql version, it should match in the dockerfile of docker-imposm3
     image: kartoza/postgis:9.6-2.4
@@ -18,19 +15,24 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - POSTGRES_DBNAME=gis
-    volumes_from:
-      - storage
-  # Uncomment to use the postgis database from outside the docker network
-    #ports:
-      #- "35432:5432"
+    volumes:
+      - 'osm-postgis-data:/var/lib/postgresql'
+    # Uncomment to use the postgis database from outside the docker network
+    # ports:
+    #  - "35432:5432"
     healthcheck:
         test: "exit 0"
+    restart: unless-stopped
 
   imposm:
-    # image: kartoza/docker-osm:imposm-latest
-    build: docker-imposm3
-    volumes_from:
-      - storage
+    image: kartoza/docker-osm:imposm-latest
+    #build: docker-imposm3
+    volumes:
+      # These are sharable to other containers
+      - ./settings:/home/settings
+      - import_done:/home/import_done
+      - import_queue:/home/import_queue
+      - cache:/home/cache
     depends_on:
         db:
           condition: service_healthy
@@ -65,11 +67,17 @@ services:
       - QGIS_STYLE=yes
       # Use clip in the database
       - CLIP=no
+    restart: unless-stopped
 
   osmupdate:
-    build: docker-osmupdate
-    volumes_from:
-      - storage
+    #build: docker-osmupdate
+    image: kartoza/docker-osm:osmupdate-latest
+    volumes:
+      # These are sharable to other containers
+      - ./settings:/home/settings
+      - import_done:/home/import_done
+      - import_queue:/home/import_queue
+      - cache:/home/cache
     environment:
       # These are all currently the defaults but listed here for your
       # convenience if you want to change them
@@ -90,3 +98,4 @@ services:
       # seconds between 2 executions of the script
       # if 0, then no update will be done, only the first initial import from the PBF
       - TIME=120
+    restart: unless-stopped
