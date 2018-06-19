@@ -27,7 +27,7 @@ services:
         test: "exit 0"
 
   imposm:
-    # image: etrimaille/docker-osm:imposm-latest
+    # image: kartoza/docker-osm:imposm-latest
     build: docker-imposm3
     volumes_from:
       - storage

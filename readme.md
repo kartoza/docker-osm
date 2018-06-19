@@ -7,8 +7,8 @@ The only file you need is a PBF file and run the docker compose project.
 
 Dockerfiles are executed on https://cloud.docker.com
 ```bash
-docker pull etrimaille/docker-osm:imposm-latest
-docker pull etrimaille/docker-osm:osmupdate-latest
+docker pull kartoza/docker-osm:imposm-latest
+docker pull kartoza/docker-osm:osmupdate-latest
 ```
 
 You need to copy/paste the docker-compose project and use the images hosted on the internet.
