@@ -59,6 +59,13 @@ rm: kill
 	@echo "------------------------------------------------------------------"
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) rm
 
+rm: clean
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Removing all volumes!!!! "
+	@echo "------------------------------------------------------------------"
+	@docker volume rm docker-osm_osm-postgis-data docker-osm_import_queue docker-osm_import_done docker-osm_cache
+
 logs:
 	@echo
 	@echo "------------------------------------------------------------------"
