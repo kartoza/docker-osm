@@ -1,7 +1,7 @@
-FROM golang:1.9
+FROM golang:1.10
 MAINTAINER Etienne Trimaille <etienne@kartoza.com>
 
-RUN apt-get update && apt-get install -y python3-pip \
+RUN apt update && apt install -y python3-pip \
       libprotobuf-dev libleveldb-dev libgeos-dev \
       libpq-dev python3-dev postgresql-client-9.6 python-setuptools \
       --no-install-recommends
