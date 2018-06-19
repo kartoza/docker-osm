@@ -1,16 +1,19 @@
-# Useage:
+# Usage:
 
 # docker-compose -f docker-compose.yml -f docker-compose-web.yml
 
-qgisserver:
-  image: kartoza/qgis-server:2.18
-  hostname: dockerosm_qgisserver
-  volumes:
-    - ./logs:/var/log/apache2
-    - ./web:/project
-    - ./settings:/web/settings
-  links:
-    - db:db
-  ports:
-    - 8198:80
-  restart: unless-stopped
+version: '2.1'
+
+services:
+  qgisserver:
+    image: kartoza/qgis-server:2.18
+    hostname: dockerosm_qgisserver
+    volumes:
+      - ./logs:/var/log/apache2
+      - ./web:/project
+      - ./settings:/web/settings
+    links:
+      - db:db
+    ports:
+      - 8198:80
+    restart: unless-stopped
