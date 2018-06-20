@@ -59,7 +59,7 @@ rm: kill
 	@echo "------------------------------------------------------------------"
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) rm
 
-rm: clean
+rm-volumes:
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Removing all volumes!!!! "
