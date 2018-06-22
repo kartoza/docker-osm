@@ -177,8 +177,7 @@ class Importer(object):
             self.info('No *.shp detected in %s, so no clipping.' % self.default['SETTINGS'])
 
         # In docker-compose, we should wait for the DB is ready.
-        self.info('The checkup is OK. The container will continue soon, after the database, in 45 seconds.')
-        sleep(45)
+        self.info('The checkup is OK.')
 
     def create_timestamp(self):
         """Create the timestamp with the undefined value until the real one."""
