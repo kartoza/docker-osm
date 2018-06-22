@@ -89,8 +89,7 @@ class Downloader(object):
         else:
             self.info('OSM PBF file: ' + self.osm_file)
 
-        self.info('The checkup is OK. The container will continue soon, after the database, in 45 seconds.')
-        sleep(45)
+        self.info('The checkup is OK.')
 
     def _check_latest_timestamp(self):
         """Fetch the latest timestamp."""
