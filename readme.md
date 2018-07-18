@@ -30,10 +30,10 @@ You can download some PBF files on these URLS for instance :
 
 ```
 cd settings
-wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
+wget -c -O data.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
 ```
 
-You must put only one PBF file in the settings folder. Only the last one will be read.
+You must called it `data.pbf` in the `settings` folder.
 
 ### OSM Features
 

@@ -36,6 +36,9 @@ services:
         db:
           condition: service_healthy
     environment:
+      # Uncomment the next line and add an URL to download a PBF while the container is starting.
+      - PBF_URL=https://download.geofabrik.de/africa/equatorial-guinea-latest.osm.pbf
+
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
       - POSTGRES_DBNAME=gis
@@ -80,6 +83,9 @@ services:
       db:
         condition: service_healthy
     environment:
+      # Uncomment the next line and add an URL to download a PBF while the container is starting.
+      - PBF_URL=https://download.geofabrik.de/africa/equatorial-guinea-latest.osm.pbf
+
       # These are all currently the defaults but listed here for your
       # convenience if you want to change them
       # the maximum time range to assemble a cumulated changefile.
