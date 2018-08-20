@@ -28,7 +28,7 @@ You can download some PBF files on these URLS for instance :
 * http://download.geofabrik.de/
 * http://download.openstreetmap.fr/extracts/
 
-```
+```bash
 cd settings
 wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
 ```
@@ -68,7 +68,7 @@ The database is provided with some default styles. These styles will be loaded
 automatically when loaded in QGIS. It's following the default OSM mapping from
 ImpOSM.
 
-```
+```bash
 make import_styles
 make remove_styles
 make backup_styles
@@ -82,21 +82,23 @@ You can add PostGIS functions, triggers, materialized views in the SQL file.
 
 Now build the docker images needed to run the application:
 
-```
+```bash
 docker-compose build
 docker-compose up
 ```
 
 In production you should daemonize the services when bringing them up:
 
-```
+```bash
 docker-compose up -d
 ```
 
 You can check the timestamp of your database by reading the file :
 ``settings/timestamp.txt`` or you can use : 
 
-``make timestamp``
+```bash
+make timestamp
+```
 
 ### Display
 
@@ -143,12 +145,14 @@ You should have 3 folders : osm_pbf, import_queue, import_done
 Put a state file in base-pbf like this one :
 http://download.openstreetmap.fr/extracts/africa/south_africa.state.txt
 
-``docker build -t osmupdate .``
-``docker run -v $('pwd')import-queue/:/home/import-queue -v $('pwd')base-pbf/:/home/base-pbf -v $('pwd')import-done/:/home/import-done -d osmupdate``
+```bash
+docker build -t osmupdate .
+docker run -v $('pwd')import-queue/:/home/import-queue -v $('pwd')base-pbf/:/home/base-pbf -v $('pwd')import-done/:/home/import-done -d osmupdate
+```
 
 With -e, you can add some settings :
 
-```
+```bash
  - MAX_DAYS = 100, the maximum time range to assemble a cumulated changefile.
  - DIFF = sporadic, osmupdate uses a combination of minutely, hourly and daily changefiles. This value can be minute, hour, day or sporadic.
  - MAX_MERGE = 7, argument to determine the maximum number of parallely processed changefiles.
@@ -176,7 +180,7 @@ The container will look for an OSM file (*.pbf) and its state file
 
 With -e, you can add some settings :
 
-```
+```bash
  - TIME = 120, seconds between 2 executions of the script
  - POSTGRES_USER = docker, default user
  - POSTGRES_PASS = docker, default password
@@ -197,12 +201,19 @@ With -e, you can add some settings :
 You can adjust these preferences in the ```docker-compose.yml``` file provided
 in this repository.
 
+# PostGIS
+
+With -e, you can add some settings to PostGIS:
+```bash
+ - ALLOW_IP_RANGE= 0.0.0.0/0
+```
+
 # QGIS Server
 
 You can run a QGIS Server front end to the OSM mirroir by using the provided
 docker-compose-web.yml file. For example:
 
-```
+```bash
 docker-compose -f docker-compose.yml -f docker-compose-web.yml qgisserver up
 ```
 
@@ -210,7 +221,7 @@ docker-compose -f docker-compose.yml -f docker-compose-web.yml qgisserver up
 
 This application was designed and implemented by:
 
-* Etienne Trimaille (etienne@kartoza.com)
+* Etienne Trimaille (etienne.trimaille@gmail.com)
 * Tim Sutton (tim@kartoza.com)
 
 With some important design ideas provided by Ariel Nunez (ingenieroariel@gmail.com).
