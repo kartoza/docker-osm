@@ -8,6 +8,7 @@ services:
   qgisserver:
     image: kartoza/qgis-server:2.18
     hostname: dockerosm_qgisserver
+    container_name: dockerosm_qgisserver
     volumes:
       - ./logs:/var/log/apache2
       - ./web:/project

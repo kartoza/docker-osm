@@ -11,6 +11,7 @@ services:
     # About the postgresql version, it should match in the dockerfile of docker-imposm3
     image: kartoza/postgis:9.6-2.4
     hostname: db
+    container_name: dockerosm_db
     environment:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
@@ -28,6 +29,7 @@ services:
   imposm:
     image: kartoza/docker-osm:imposm-latest
     build: docker-imposm3
+    container_name: dockerosm_imposm
     volumes:
       # These are sharable to other containers
       - ./settings:/home/settings
@@ -72,6 +74,7 @@ services:
   osmupdate:
     build: docker-osmupdate
     image: kartoza/docker-osm:osmupdate-latest
+    container_name: dockerosm_osmupdate
     volumes:
       # These are sharable to other containers
       - ./settings:/home/settings

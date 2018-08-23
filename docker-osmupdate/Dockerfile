@@ -1,6 +1,6 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 FROM ubuntu:18.04
-MAINTAINER Etienne Trimaille<etienne@kartoza.com>
+MAINTAINER Etienne Trimaille<etienne.trimaille@gmail.com>
 
 RUN  export DEBIAN_FRONTEND=noninteractive
 ENV  DEBIAN_FRONTEND noninteractive

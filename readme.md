@@ -4,6 +4,26 @@ A docker compose project to setup an OSM PostGIS database with automatic
 updates from OSM periodically.
 The only file you need is a PBF file and run the docker compose project.
 
+
+## Quick setup
+
+As a quick example, we are going to setup Docker-OSM with default values everywhere:
+* Download a PBF file from http://download.geofabrik.de/
+* Put the file in the `settings` folder.
+* If you want to connect from your local QGIS Desktop:
+  * In the file `docker-compose.yml`, uncomment the block:
+
+```yml
+# Uncomment to use the postgis database from outside the docker network
+ports:
+ - "35432:5432"
+```
+* Do `make run` in the build directory. This will download and execute the docker-osm project. It might be very long depending of your bandwidth and the PBF you are importing.
+* In QGIS, add a new PostGIS connexion: `localhost`, database `gis`, port `35432`, `docker` for both username and password.
+* That's it! You have a OSM database, up and running. The update is done every 2 minutes from the main OSM website.
+
+For further reading and customizations, read below.
+
 ## Docker cloud
 
 Dockerfiles are executed on https://cloud.docker.com

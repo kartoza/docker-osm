@@ -1,5 +1,5 @@
 FROM golang:1.10
-MAINTAINER Etienne Trimaille <etienne@kartoza.com>
+MAINTAINER Etienne Trimaille <etienne.trimaille@gmail.com>
 
 RUN apt update && apt install -y python3-pip \
       libprotobuf-dev libleveldb-dev libgeos-dev \
