@@ -76,9 +76,10 @@ you don't set a clipping area, you will end with data from all over the world.
 
 You can put a shapefile in the clip folder. This shapefile will be 
 used for clipping every features after the import.
-This file has to be named 'clip.shp'. When the database container is 
-running, import the shapefile in the database using the command : 
-'make import_clip'.
+This file has to be named 'clip.shp' and in the CRS you are using in the database (4326 by default).
+When the database container is running, import the shapefile in the database using the command : 
+
+`make import_clip`.
 
 You can remove the clip file : `make remove_clip`.
 

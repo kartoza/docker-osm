@@ -52,10 +52,10 @@ kill:
 	@echo "------------------------------------------------------------------"
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) kill
 
-rm: kill
+rm: kill rm-volumes
 	@echo
 	@echo "------------------------------------------------------------------"
-	@echo "Removing production instance!!! "
+	@echo "Removing production instance and all volumes!!! "
 	@echo "------------------------------------------------------------------"
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) rm
 
@@ -64,7 +64,7 @@ rm-volumes:
 	@echo "------------------------------------------------------------------"
 	@echo "Removing all volumes!!!! "
 	@echo "------------------------------------------------------------------"
-	@docker volume rm docker-osm_osm-postgis-data docker-osm_import_queue docker-osm_import_done docker-osm_cache
+	@docker volume rm $(PROJECT_ID)_osm-postgis-data $(PROJECT_ID)_import_queue $(PROJECT_ID)_import_done $(PROJECT_ID)_cache
 
 logs:
 	@echo
@@ -89,14 +89,14 @@ live_logs:
 import_clip:
 	@echo
 	@echo "------------------------------------------------------------------"
-	@echo "Importing clip shapefile"
+	@echo "Importing clip shapefile into the database"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)_db /usr/bin/shp2pgsql -c -I -D -s 4326 /home/settings/clip/clip.shp | docker exec -i $(PROJECT_ID)_db su - postgres -c "psql gis"
+	@docker exec -t -i $(PROJECT_ID)_imposm /usr/bin/ogr2ogr -lco GEOMETRY_NAME=geom -f PostgreSQL PG:"host=db user=docker password=docker dbname=gis" /home/settings/clip/clip.shp
 
 remove_clip:
 	@echo
 	@echo "------------------------------------------------------------------"
-	@echo "Removing clip shapefile"
+	@echo "Removing clip shapefile from the database"
 	@echo "------------------------------------------------------------------"
 	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'DROP TABLE IF EXISTS clip;'"
 

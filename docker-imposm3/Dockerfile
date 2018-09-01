@@ -4,6 +4,7 @@ MAINTAINER Etienne Trimaille <etienne.trimaille@gmail.com>
 RUN apt update && apt install -y python3-pip \
       libprotobuf-dev libleveldb-dev libgeos-dev \
       libpq-dev python3-dev postgresql-client-9.6 python-setuptools \
+      gdal-bin \
       --no-install-recommends
 
 RUN ln -s /usr/lib/libgeos_c.so /usr/lib/libgeos.so
