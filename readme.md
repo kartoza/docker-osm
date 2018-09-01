@@ -20,13 +20,13 @@ ports:
 ```
 * Do `make run` in the build directory. This will download and execute the docker-osm project. It might be very long depending of your bandwidth and the PBF you are importing.
 * In QGIS, add a new PostGIS connexion: `localhost`, database `gis`, port `35432`, `docker` for both username and password.
-* That's it! You have a OSM database, up and running. The update is done every 2 minutes from the main OSM website.
+* That's it! You have an OSM database, up and running. The update is done every 2 minutes from the main OSM website.
 
 For further reading and customizations, read below.
 
 ## Docker cloud
 
-Dockerfiles are executed on https://cloud.docker.com
+Dockerfiles are executed on [Docker Cloud kartoza/docker-osm](https://cloud.docker.com/swarm/kartoza/repository/docker/kartoza/docker-osm/general)
 
 ```bash
 docker pull kartoza/docker-osm:imposm-latest
