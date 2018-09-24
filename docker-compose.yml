@@ -17,12 +17,12 @@ services:
       - POSTGRES_PASS=docker
       - POSTGRES_DBNAME=gis
       # Uncomment to expose the postgis database on the network
-      # - ALLOW_IP_RANGE= 0.0.0.0/0
+      - ALLOW_IP_RANGE= 0.0.0.0/0
     volumes:
       - 'osm-postgis-data:/var/lib/postgresql'
     # Uncomment to use the postgis database from outside the docker network
-    # ports:
-    #  - "35432:5432"
+    ports:
+      - "35432:5432"
     healthcheck:
         test: "exit 0"
 
