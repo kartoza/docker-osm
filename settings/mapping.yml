@@ -1,6 +1,6 @@
 areas:
-  area_tags: [buildings, landuse, leisure, natural, aeroway]
-  linear_tags: [highway, barrier]
+  area_tags: [transport_areas, landuse, transport_points, natural, aeroway]
+  linear_tags: [waterway, electrical, roads, gas]
 tables:
    gas:
     columns:
@@ -67,3 +67,42 @@ tables:
        - rail
        - light_rail
     type: linestring
+   transport_points:
+    columns:
+     - name: osm_id
+       type: id
+     - name: geometry
+       type: geometry
+     - key: name
+       name: name
+       type: string
+     - name: type
+       type: mapping_value
+     - key: ref
+       name: ref
+       type: string
+    mapping:
+      railway:
+        - station
+        - halt
+        - tram_stop
+        - crossing
+        - level_crossing
+        - subway_entrance
+    type: point
+   transport_areas:
+    columns:
+     - name: osm_id
+       type: id
+     - name: geometry
+       type: geometry
+     - key: name
+       name: name
+       type: string
+     - name: type
+       type: mapping_value
+    mapping:
+      railway:
+        - station
+        - platform
+    type: polygon
