@@ -1,196 +1,8 @@
 areas:
   area_tags: [buildings, landuse, leisure, natural, aeroway]
   linear_tags: [highway, barrier]
-generalized_tables:
-  landusages_gen0:
-    source: landusages_gen1
-    sql_filter: ST_Area(geometry)>500000.000000
-    tolerance: 200.0
-  landusages_gen1:
-    source: landusages
-    sql_filter: ST_Area(geometry)>50000.000000
-    tolerance: 50.0
-  roads_gen0:
-    source: roads_gen1
-    tolerance: 200.0
-  roads_gen1:
-    source: roads
-    sql_filter:
-#      type IN (
-#        'motorway', 'motorway_link', 'trunk', 'trunk_link', 'primary',
-#        'primary_link', 'secondary', 'secondary_link', 'tertiary', 'tertiary_link')
-#      OR class IN('railway')
-    tolerance: 50.0
-  waterareas_gen0:
-    source: waterareas_gen1
-    sql_filter: ST_Area(geometry)>500000.000000
-    tolerance: 200.0
-  waterareas_gen1:
-    source: waterareas
-    sql_filter: ST_Area(geometry)>50000.000000
-    tolerance: 50.0
-  waterways_gen0:
-    source: waterways_gen1
-    tolerance: 200
-  waterways_gen1:
-    source: waterways
-    tolerance: 50.0
 tables:
-  admin:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    - key: admin_level
-      name: admin_level
-      type: integer
-    mapping:
-      boundary:
-      - administrative
-    type: polygon
-  landusages:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    - name: area
-      type: webmerc_area
-    - args:
-        values:
-        - land
-        - island
-        - heath
-        - railway
-        - industrial
-        - commercial
-        - retail
-        - residential
-        - quarry
-        - zoo
-        - vineyard
-        - orchard
-        - scrub
-        - hospital
-        - place_of_worship
-        - theatre
-        - cinema
-        - nature_reserve
-        - parking
-        - fuel
-        - baracks
-        - library
-        - college
-        - school
-        - university
-        - golf_course
-        - allotments
-        - common
-        - pitch
-        - sports_centre
-        - garden
-        - recreation_ground
-        - village_green
-        - wetland
-        - grass
-        - meadow
-        - wood
-        - farmland
-        - farm
-        - farmyard
-        - cemetery
-        - forest
-        - park
-        - playground
-        - footway
-        - pedestrian
-      name: z_order
-      type: enumerate
-    mapping:
-      landuse:
-#      - park
-#      - forest
-#      - residential
-#      - retail
-#      - commercial
-#      - industrial
-      - railway
-#      - cemetery
-#      - grass
-#      - farmyard
-#      - farm
-#      - farmland
-#      - orchard
-#      - vineyard
-#      - wood
-#      - meadow
-#      - village_green
-#      - recreation_ground
-#      - allotments
-#      - quarry
-    type: polygon
-  roads:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - name: type
-      type: mapping_value
-    - key: name
-      name: name
-      type: string
-    - key: tunnel
-      name: tunnel
-      type: boolint
-    - key: bridge
-      name: bridge
-      type: boolint
-    - key: oneway
-      name: oneway
-      type: direction
-    - key: ref
-      name: ref
-      type: string
-    - key: layer
-      name: z_order
-      type: wayzorder
-    - key: access
-      name: access
-      type: string
-    - key: service
-      name: service
-      type: string
-    - name: class
-      type: mapping_key
-    filters:
-      reject:
-        area: ["yes"]
-    mappings:
-      railway:
-        mapping:
-          railway:
-          - rail
-#          - tram
-          - light_rail
-#          - subway
-#          - narrow_gauge
-#          - preserved
-          - funicular
-#          - monorail
-#          - disused
-  transport_areas:
+   gas:
     columns:
     - name: osm_id
       type: id
@@ -202,98 +14,56 @@ tables:
     - name: type
       type: mapping_value
     mapping:
-#      aeroway:
-#      - aerodrome
-#      - terminal
-#      - helipad
-#      - apron
-      railway:
-      - station
-#      - platform
-    type: polygon
-  transport_points:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    - key: ref
-      name: ref
-      type: string
-    mapping:
-#      aeroway:
-#      - aerodrome
-#      - terminal
-#      - helipad
-#      - gate
-#      highway:
-#      - motorway_junction
-#      - turning_circle
-#      - bus_stop
-      railway:
-      - station
-      - halt
-      - tram_stop
-      - crossing
-      - level_crossing
-      - subway_entrance
-    type: point
-  waterways:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    mapping:
-#      barrier:
-#      - ditch
-      waterway:
-#      - stream
-      - river
-      - canal
-      - dam
-#      - drain
-#      - ditch
+      man_made:
+        - pipeline
     type: linestring
    electrical:
     columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
+     - name: osm_id
+       type: id
+     - name: geometry
+       type: geometry
+     - key: name
+       name: name
+       type: string
+     - name: type
+       type: mapping_value
     mapping:
       power:
-       - cable
-       - line
-       - minor_lines
+        - cable
+        - line
+        - minor_lines
     type: linestring
-   gas:
+   waterways:
     columns:
-      - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
+     - name: osm_id
+       type: id
+     - name: geometry
+       type: geometry
+     - key: name
+       name: name
+       type: string
+     - name: type
+       type: mapping_value
     mapping:
-      man_made: pipeline
+      waterway:
+        - river
+        - canal
+        - dam
     type: linestring
-
+   roads:
+    columns:
+     - name: osm_id
+       type: id
+     - name: geometry
+       type: geometry
+     - name: type
+       type: mapping_value
+     - key: name
+       name: name
+       type: string
+    mapping:
+      railway:
+       - rail
+       - light_rail
+    type: linestring
