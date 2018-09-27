@@ -1,6 +1,6 @@
 areas:
-  area_tags: [transport_areas, landuse, transport_points, natural, aeroway]
-  linear_tags: [waterway, electrical, roads, gas]
+  area_tags: [transport_areas, landuse, transport_points, natural, aeroways]
+  linear_tags: [waterways, electrical, roads, gas]
 tables:
    gas:
     columns:
@@ -106,7 +106,7 @@ tables:
         - station
         - platform
     type: polygon
-   ports:
+   aeroways:
     columns:
      - name: osm_id
        type: id
@@ -115,6 +115,26 @@ tables:
      - key: name
        name: name
        type: string
+     - key: iata
+       name: iata
+       type: string
+     - key: icao
+       name: icao
+       type: string
+     - key: ele
+       name: elevation
+       type: string
+     - name: type
+       type: mapping_value
+     - key: ref
+       name: ref
+       type: string
+    mapping:
+     aeroway:
+       - aerodrome
+       - runway
+       - spaceport       
+   ports:
      - name: type
        type: mapping_value
     mappings:
