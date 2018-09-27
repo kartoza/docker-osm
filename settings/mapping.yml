@@ -106,3 +106,26 @@ tables:
         - station
         - platform
     type: polygon
+   ports:
+    columns:
+     - name: osm_id
+       type: id
+     - name: geometry
+       type: geometry
+     - key: name
+       name: name
+       type: string
+     - name: type
+       type: mapping_value
+    mappings:
+     port:
+      mapping:
+       landuse:
+         - harbour
+         - port
+      harbour: ["yes"]
+    industrial:
+      mapping:
+       industrial:
+         - port
+    type: polygon
