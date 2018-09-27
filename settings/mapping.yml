@@ -133,5 +133,19 @@ tables:
      aeroway:
        - aerodrome
        - runway
-       - spaceport
+       - spaceport       
+   ports:
+     - name: type
+       type: mapping_value
+    mappings:
+     port:
+      mapping:
+       landuse:
+         - harbour
+         - port
+      harbour: ["yes"]
+    industrial:
+      mapping:
+       industrial:
+         - port
     type: polygon
