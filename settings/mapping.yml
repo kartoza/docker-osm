@@ -1,151 +1,160 @@
 areas:
   area_tags: [transport_areas, landuse, transport_points, natural, aeroways]
-  linear_tags: [waterways, electrical, roads, gas]
+  linear_tags: [waterways, electrical, railways, gas]
 tables:
    gas:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    mapping:
-      man_made:
-        - pipeline
-    type: linestring
+     columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - name: type
+        type: mapping_value
+     mapping:
+       man_made:
+         - pipeline
+     type: linestring
    electrical:
-    columns:
-     - name: osm_id
-       type: id
-     - name: geometry
-       type: geometry
-     - key: name
-       name: name
-       type: string
-     - name: type
-       type: mapping_value
-    mapping:
-      power:
-        - cable
-        - line
-        - minor_lines
-    type: linestring
+     columns:
+       - name: osm_id
+         type: id
+       - name: geometry
+         type: geometry
+       - key: name
+         name: name
+         type: string
+       - name: type
+         type: mapping_value
+     mapping:
+       power:
+         - cable
+         - line
+         - minor_lines
+     type: linestring
    waterways:
-    columns:
-     - name: osm_id
-       type: id
-     - name: geometry
-       type: geometry
-     - key: name
-       name: name
-       type: string
-     - name: type
-       type: mapping_value
-    mapping:
-      waterway:
-        - river
-        - canal
-        - dam
-    type: linestring
-   roads:
-    columns:
-     - name: osm_id
-       type: id
-     - name: geometry
-       type: geometry
-     - name: type
-       type: mapping_value
-     - key: name
-       name: name
-       type: string
-    mapping:
-      railway:
-       - rail
-       - light_rail
-    type: linestring
+     columns:
+       - name: osm_id
+         type: id
+       - name: geometry
+         type: geometry
+       - key: name
+         name: name
+         type: string
+       - name: type
+         type: mapping_value
+     mapping:
+       waterway:
+         - river
+         - canal
+         - dam
+     type: linestring
+   railways:
+     columns:
+       - name: osm_id
+         type: id
+       - name: geometry
+         type: geometry
+       - name: type
+         type: mapping_value
+       - key: name
+         name: name
+         type: string
+     mapping:
+       railway:
+        - rail
+        - light_rail
+     type: linestring
    transport_points:
-    columns:
-     - name: osm_id
-       type: id
-     - name: geometry
-       type: geometry
-     - key: name
-       name: name
-       type: string
-     - name: type
-       type: mapping_value
-     - key: ref
-       name: ref
-       type: string
-    mapping:
-      railway:
-        - station
-        - halt
-        - tram_stop
-        - crossing
-        - level_crossing
-        - subway_entrance
-    type: point
+     columns:
+       - name: osm_id
+         type: id
+       - name: geometry
+         type: geometry
+       - key: name
+         name: name
+         type: string
+       - name: type
+         type: mapping_value
+       - key: ref
+         name: ref
+         type: string
+     mapping:
+       railway:
+         - station
+         - halt
+         - tram_stop
+         - crossing
+         - level_crossing
+         - subway_entrance
+     type: point
    transport_areas:
-    columns:
-     - name: osm_id
-       type: id
-     - name: geometry
-       type: geometry
-     - key: name
-       name: name
-       type: string
-     - name: type
-       type: mapping_value
-    mapping:
-      railway:
-        - station
-        - platform
-    type: polygon
+     columns:
+       - name: osm_id
+         type: id
+       - name: geometry
+         type: geometry
+       - key: name
+         name: name
+         type: string
+       - name: type
+         type: mapping_value
+     mapping:
+       railway:
+         - station
+         - platform
+     type: polygon
    aeroways:
-    columns:
-     - name: osm_id
-       type: id
-     - name: geometry
-       type: geometry
-     - key: name
-       name: name
-       type: string
-     - key: iata
-       name: iata
-       type: string
-     - key: icao
-       name: icao
-       type: string
-     - key: ele
-       name: elevation
-       type: string
-     - name: type
-       type: mapping_value
-     - key: ref
-       name: ref
-       type: string
-    mapping:
-     aeroway:
-       - aerodrome
-       - runway
-       - spaceport       
+     columns:
+       - name: osm_id
+         type: id
+       - name: geometry
+         type: geometry
+       - key: name
+         name: name
+         type: string
+       - key: iata
+         name: iata
+         type: string
+       - key: icao
+         name: icao
+         type: string
+       - key: ele
+         name: elevation
+         type: string
+       - name: type
+         type: mapping_value
+       - key: ref
+         name: ref
+         type: string
+     mapping:
+       aeroway:
+         - aerodrome
+         - runway
+         - spaceport
+     type: polygon
    ports:
-     - name: type
-       type: mapping_value
-    mappings:
-     port:
-      mapping:
-       landuse:
-         - harbour
-         - port
-      harbour: ["yes"]
-    industrial:
-      mapping:
+     columns:
+       - name: osm_id
+         type: id
+       - name: geometry
+         type: geometry
+       - key: name
+         name: name
+         type: string
+       - name: type
+         type: mapping_value
+     mappings:
+       port:
+         mapping:
+           landuse:
+             - harbour
+             - port
+         harbour: ["yes"]
        industrial:
-         - port
-    type: polygon
+         mapping:
+           industrial:
+             - port
+     type: polygon
