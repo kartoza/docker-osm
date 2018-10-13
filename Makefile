@@ -91,7 +91,7 @@ import_clip:
 	@echo "------------------------------------------------------------------"
 	@echo "Importing clip shapefile into the database"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)_imposm /usr/bin/ogr2ogr -progress -skipfailures -lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI -f PostgreSQL PG:"host=db user=docker password=docker dbname=gis" /home/settings/clip/clip.shp -sql "SELECT *, 1 as id from clip"
+	@docker exec -t -i $(PROJECT_ID)_imposm /usr/bin/ogr2ogr -progress -skipfailures -lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI -f PostgreSQL PG:"host=db user=docker password=docker dbname=gis" /home/settings/clip/clip.shp
 
 remove_clip:
 	@echo
