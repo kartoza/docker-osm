@@ -89,9 +89,10 @@ live_logs:
 import_clip:
 	@echo
 	@echo "------------------------------------------------------------------"
-	@echo "Importing clip shapefile into the database"
+	@echo "Importing clip shapefile and clip function into the database"
 	@echo "------------------------------------------------------------------"
 	@docker exec -t -i $(PROJECT_ID)_imposm /usr/bin/ogr2ogr -progress -skipfailures -lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI -f PostgreSQL PG:"host=db user=docker password=docker dbname=gis" /home/settings/clip/clip.shp
+	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) exec imposm psql -h db -f /home/settings/clip/clip.sql gis docker
 
 remove_clip:
 	@echo
