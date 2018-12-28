@@ -11,7 +11,8 @@ BEGIN
         EXECUTE 'DELETE FROM ' || quote_ident(osm_table.table_name) || ' WHERE osm_id IN (
             SELECT DISTINCT osm_id
             FROM ' || quote_ident(osm_table.table_name) || '
-            LEFT JOIN clip ON ST_Intersects(geometry, geom))
+            LEFT JOIN clip ON ST_Intersects(geometry, geom)
+            WHERE clip.ogc_fid IS NULL)
         ;';
     END LOOP;
 END;

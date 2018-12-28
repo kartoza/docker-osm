@@ -42,6 +42,7 @@ services:
     environment:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
+      - PGPASSWORD=docker
       - POSTGRES_DBNAME=gis
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=db
