@@ -63,6 +63,12 @@ website: https://imposm.org/docs/imposm3/latest/mapping.html
 The default file in Docker-OSM is coming from
 https://raw.githubusercontent.com/omniscale/imposm3/master/example-mapping.yml
 
+**Note** that you can't import OSM metadata such as author, timestamp or version.
+This is a limitation from ImpOSM, check the feature request on the [Imposm repository](https://github.com/omniscale/imposm3/issues/58).
+Imposm is designed for spatial analysis, not for OSM contribution analysis.
+If you need such a feature, you need to use another database schema supporting OSM Metadata. 
+You can check the [OSM Wiki](https://wiki.openstreetmap.org/wiki/Databases_and_data_access_APIs#Database_Schemas) for "Lossless" schemas.
+
 ### Updates
 
 You can configure the time interval in the docker-compose file. By default,
