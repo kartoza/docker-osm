@@ -4,6 +4,9 @@ A docker compose project to setup an OSM PostGIS database with automatic
 updates from OSM periodically.
 The only file you need is a PBF file and run the docker compose project.
 
+## General architecture
+
+![Alt text](/docs/architecture.png?raw=true "Optional Title")
 
 ## Quick setup
 
