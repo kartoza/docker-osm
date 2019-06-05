@@ -113,11 +113,40 @@ timestamp:
 	@docker exec -t -i $(PROJECT_ID)_imposm cat /home/settings/timestamp.txt
 
 ###
+#    SQL FILES
+###
+
+
+import_sql: import_sql
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Importing SQL files"
+	@echo "------------------------------------------------------------------"
+	@docker exec -i $(PROJECT_ID)_db su - postgres -c "psql -f /home/settings/clip/clip.sql gis"
+
+validate_geom: validate_geom
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Validating geom for all tables"
+	@echo "------------------------------------------------------------------"
+	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'Select validate_geom();'"
+
+
+clip_tables: clip_tables
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Clip tables using the clip layer"
+	@echo "------------------------------------------------------------------"
+	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'Select clean_tables();'"
+
+
+
+###
 #    STYLES
 ###
 
 
-import_styles: remove_styles
+import_styles: import_styles
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Importing QGIS styles"
