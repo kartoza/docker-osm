@@ -19,7 +19,8 @@ services:
       # Uncomment to expose the postgis database on the network
       # - ALLOW_IP_RANGE= 0.0.0.0/0
     volumes:
-      - 'osm-postgis-data:/var/lib/postgresql'
+      - osm-postgis-data:/var/lib/postgresql
+      - ./settings:/home/settings
     # Uncomment to use the postgis database from outside the docker network
     # ports:
     #  - "35432:5432"
@@ -68,8 +69,8 @@ services:
       - DBSCHEMA_BACKUP=backup
       # Install some styles if you are using the default mapping. It can be 'yes' or 'no'
       - QGIS_STYLE=yes
-      # Use clip in the database
-      - CLIP=no
+      # Use clip in the database - To use this you should have run make import_clip to add your clip to the DB
+      - CLIP=yes
 
   osmupdate:
     build: docker-osmupdate
