@@ -9,7 +9,7 @@ volumes:
 services:
   db:
     # About the postgresql version, it should match in the dockerfile of docker-imposm3
-    image: kartoza/postgis:9.6-2.4
+    image: kartoza/postgis:11.0-2.5
     hostname: db
     container_name: dockerosm_db
     environment:
