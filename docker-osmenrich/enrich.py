@@ -59,7 +59,8 @@ class Enrich(object):
             'SETTINGS': 'settings',
             'OSM_API_URL': 'https://api.openstreetmap.org/api/0.6/',
             'IMPORT_DONE': 'import_done',
-            'CACHE': 'cache'
+            'CACHE': 'cache',
+            'MAX_DIFF_FILE_SIZE': 100000000
         }
         self.mapping_file = None
         self.mapping_database_schema = {}
@@ -440,7 +441,7 @@ class Enrich(object):
                         self.update_enrich_into_database(
                             table, table_data['osm_id_columnn'], osm_id, new_data)
                 except Exception as e:
-                    self.info('error when processing %s' % osm_id)
+                    self.info('error when processing %s: %s' % (osm_id, e))
                 connection.close()
 
     def enrich_database_from_diff_file(self):
@@ -452,7 +453,7 @@ class Enrich(object):
             self.info('Folder %s is not ready yet' % target_folder)
             return
 
-        for filename in listdir(target_folder):
+        for filename in sorted(listdir(target_folder)):
             try:
                 if filename.endswith('.gz'):
                     if not self.latest_diff_file or self.latest_diff_file < filename:
@@ -460,7 +461,7 @@ class Enrich(object):
                         # if it is newest file
                         # process for getting this
                         gzip_file = join(target_folder, filename)
-                        if getsize(gzip_file) > 1000000000:
+                        if getsize(gzip_file) > self.default['MAX_DIFF_FILE_SIZE']:
                             self.info('File is too big, skip it')
                             continue
                         f = gzip.open(gzip_file, 'rb')
@@ -485,14 +486,15 @@ class Enrich(object):
                         if not next_latest_diff_file or next_latest_diff_file < filename:
                             next_latest_diff_file = filename
             except Exception as e:
-                self.info('Error when processing %s' % filename)
-        if next_latest_diff_file:
-            try:
-                cache_file = self.get_cache_path()
-                f = open(cache_file, 'w')
-                f.write(next_latest_diff_file)
-            except IOError:
-                self.info('cache file can\'t be created')
+                self.info('Error when processing %s : %s' % (filename, e))
+
+            if next_latest_diff_file:
+                try:
+                    cache_file = self.get_cache_path()
+                    f = open(cache_file, 'w')
+                    f.write(next_latest_diff_file)
+                except IOError:
+                    self.info('cache file can\'t be created')
 
     def run(self):
         """First checker."""
