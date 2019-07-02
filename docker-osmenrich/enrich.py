@@ -101,10 +101,6 @@ class Enrich(object):
                 mkdir(cache_folder)
         self.cache_folder = cache_folder
 
-        # check latest diff file
-        if self.get_cache_file():
-            self.latest_diff_file = open(self.get_cache_file(), "r").read()
-
     def get_cache_path(self):
         return join(self.cache_folder, 'cache')
 
@@ -445,6 +441,10 @@ class Enrich(object):
                 connection.close()
 
     def enrich_database_from_diff_file(self):
+        # check latest diff file
+        if self.get_cache_file():
+            self.latest_diff_file = open(self.get_cache_file(), "r").read()
+
         # get list diff file
         next_latest_diff_file = None
         target_folder = self.default['IMPORT_DONE']
