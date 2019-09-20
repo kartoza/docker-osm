@@ -16,7 +16,6 @@ status:
 	@echo "------------------------------------------------------------------"
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) ps
 
-
 build:
 	@echo
 	@echo "------------------------------------------------------------------"
@@ -129,15 +128,14 @@ validate_geom: validate_geom
 	@echo "------------------------------------------------------------------"
 	@echo "Validating geom for all tables"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'Select validate_geom();'"
-
+	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'SELECT validate_geom();'"
 
 clip_tables: clip_tables
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Clip tables using the clip layer"
 	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'Select clean_tables();'"
+	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'SELECT clean_tables();'"
 
 
 
