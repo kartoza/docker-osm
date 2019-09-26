@@ -101,7 +101,7 @@ class Importer(object):
             msg = 'QGIS_STYLE not supported : %s' % self.default['QGIS_STYLE']
             self.error(msg)
         else:
-            self.info('Qgis style: ' + self.default['QGIS_STYLE'])
+            self.info('QGIS style: ' + self.default['QGIS_STYLE'])
 
         # Check folders.
         folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'SETTINGS', 'CACHE']
@@ -204,9 +204,7 @@ class Importer(object):
                     self.default['POSTGRES_PASS']))
             self.cursor = connection.cursor()
         except OperationalError as e:
-            print(stderr.write(e))
-
-            exit()
+            self.error(e)
 
         self.postgis_uri = 'postgis://%s:%s@%s/%s' % (
             self.default['POSTGRES_USER'],
@@ -246,7 +244,7 @@ class Importer(object):
         command += ['-d', self.default['POSTGRES_DBNAME']]
         command += ['-f', self.clip_sql_file]
         call(command)
-        self.info('!! Be sure to run \'make import_clip\' to import the shapefile into the DB !!')
+        self.info('!! Be sure to run \'make import_clip\' to import the Shapefile into the DB !!')
 
     def perform_clip_in_db(self):
         """Perform clipping if the clip table is here."""
