@@ -155,7 +155,7 @@ class Importer(object):
             self.info('Mapping: ' + self.osm_file)
 
         if not self.post_import_file:
-            self.info('No custom SQL files *.sql detected in %s' % self.default['SETTINGS'])
+            self.info('No custom SQL files post-pbf-import.sql detected in %s' % self.default['SETTINGS'])
         else:
             self.info('SQL Post Import: ' + self.post_import_file)
 
