@@ -104,10 +104,11 @@ make remove_styles
 make backup_styles
 ```
 
-### SQL Trigger
+### SQL Trigger, functions, views...
 
-You can add PostGIS functions, triggers, materialized views in the clip SQL file. You need to run
-`make import_sql` to run the clip SQL file
+You can add PostGIS functions, triggers, materialized views in a 
+SQL file called `post-pbf-import.sql`. 
+It will be imported automatically in the database.
 
 ### Build and run
 
