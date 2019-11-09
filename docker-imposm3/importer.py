@@ -337,8 +337,12 @@ class Importer(object):
 
         if osm_clip_table != 1:
             self._import_clip_function()
-            self.import_clip_in_db()
-            self.perform_clip_in_db()
+            if not self.clip_shape_file:
+                msg = 'clip.shp is missing'
+                self.error(msg)
+            else:
+                self.import_clip_in_db()
+                self.perform_clip_in_db()
         if self.qgis_style:
             self.import_qgis_styles()
 
