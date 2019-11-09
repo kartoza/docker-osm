@@ -26,6 +26,7 @@ from os.path import join, exists, abspath, isabs
 from psycopg2 import connect, OperationalError
 from subprocess import call
 from time import sleep
+from pathlib import Path
 
 
 class Importer(object):
@@ -56,6 +57,7 @@ class Importer(object):
         self.post_import_file = None
         self.clip_shape_file = None
         self.clip_sql_file = None
+        self.clip_json_file = None
         self.qgis_style = None
 
         self.cursor = None
@@ -95,7 +97,7 @@ class Importer(object):
             self.error(msg)
         else:
             self.info('Clip: ' + self.default['CLIP'])
-
+            # Check valid CLIP.
         # Check valid QGIS_STYLE.
         if self.default['QGIS_STYLE'] not in ['yes', 'no']:
             msg = 'QGIS_STYLE not supported : %s' % self.default['QGIS_STYLE']
@@ -131,6 +133,9 @@ class Importer(object):
             if f == 'post-pbf-import.sql':
                 self.post_import_file = join(self.default['SETTINGS'], f)
 
+            if f == 'clip.geojson':
+                self.clip_json_file = join(self.default['SETTINGS'], f)
+
             if f == 'qgis_style.sql':
                 self.qgis_style = join(self.default['SETTINGS'], f)
 
@@ -158,6 +163,10 @@ class Importer(object):
             self.info('No custom SQL files post-pbf-import.sql detected in %s' % self.default['SETTINGS'])
         else:
             self.info('SQL Post Import: ' + self.post_import_file)
+        if not self.clip_json_file:
+            self.info('No json files to limit import detected in %s' % self.default['SETTINGS'])
+        else:
+            self.info('Geojson Initial Import Clip: ' + self.clip_json_file)
 
         if not self.qgis_style and self.default['QGIS_STYLE'] == 'yes':
             msg = 'qgis_style.sql is missing in %s and QGIS_STYLE = yes.' % self.default['SETTINGS']
@@ -244,11 +253,11 @@ class Importer(object):
         command += ['-d', self.default['POSTGRES_DBNAME']]
         command += ['-f', self.clip_sql_file]
         call(command)
-        self.info('!! Be sure to run \'make import_clip\' to import the Shapefile into the DB !!')
+        self.info('!! If clip file exists it will be imported into the DB!!')
 
     def perform_clip_in_db(self):
         """Perform clipping if the clip table is here."""
-        if self.count_table('clip') == 1:
+        if self.locate_table('clip') == 1:
             self.info('Clipping')
             command = ['psql']
             command += ['-h', self.default['POSTGRES_HOST']]
@@ -257,19 +266,34 @@ class Importer(object):
             command += ['-c', 'SELECT clean_tables();']
             call(command)
 
-    def count_table(self, name):
-        """Check if there is a table starting with name."""
-        sql = 'select count(*) ' \
-              'from information_schema.tables ' \
-              'where table_name like \'%s\';' % name
+    def import_clip_in_db(self):
+        """Import shapefile for clipping"""
+        if not self.clip_shape_file:
+            msg = 'clip.shp is missing'
+            self.error(msg)
+        else:
+            self.info('Loading clip layer into the database')
+            db_connection = "host=%s user=%s password=%s dbname=%s" % (self.default['POSTGRES_HOST'],
+                                                                       self.default['POSTGRES_USER'],
+                                                                       self.default['POSTGRES_PASS'],
+                                                                       self.default['POSTGRES_DBNAME'])
+            clipper = ''' /usr/bin/ogr2ogr -progress -skipfailures -lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI \
+                        -f PostgreSQL PG:"%s" %s ''' % (db_connection, self.clip_shape_file)
+            print(clipper)
+            call(clipper, shell=True)
+
+    def locate_table(self, name):
+        """Check if clip table exists in the DB"""
+        sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables where table_name like  'TEMP_TABLE'); """
+        self.cursor.execute(sql.replace('TEMP_TABLE', '%s' % name))
         # noinspection PyUnboundLocalVariable
-        self.cursor.execute(sql)
         return self.cursor.fetchone()[0]
 
     def run(self):
         """First checker."""
-        osm_tables = self.count_table('osm_%')
-        if osm_tables < 1:
+        osm_tables = self.locate_table('osm_%')
+
+        if osm_tables != 1:
             # It means that the DB is empty. Let's import the PBF file.
             self._first_pbf_import()
         else:
@@ -282,6 +306,7 @@ class Importer(object):
             self.info('No more update to the database. Leaving.')
 
     def _first_pbf_import(self):
+        osm_clip_table = self.locate_table('clip')
         """Run the first PBF import into the database."""
         command = ['imposm', 'import', '-diff', '-deployproduction']
         command += ['-overwritecache', '-cachedir', self.default['CACHE']]
@@ -293,6 +318,7 @@ class Importer(object):
         command += ['-diffdir', self.default['SETTINGS']]
         command += ['-mapping', self.mapping_file]
         command += ['-read', self.osm_file]
+        command += ['-limitto', self.clip_json_file]
         command += ['-write', '-connection', self.postgis_uri]
         self.info('The database is empty. Let\'s import the PBF : %s' % self.osm_file)
         self.info(' '.join(command))
@@ -309,14 +335,15 @@ class Importer(object):
         if self.post_import_file:
             self.import_custom_sql()
 
-        if self.clip_shape_file:
+        if osm_clip_table != 1:
             self._import_clip_function()
+            self.import_clip_in_db()
             self.perform_clip_in_db()
-
         if self.qgis_style:
             self.import_qgis_styles()
 
     def _import_diff(self):
+        osm_clip_table = self.locate_table('clip')
         # Finally launch the listening process.
         while True:
             import_queue = sorted(listdir(self.default['IMPORT_QUEUE']))
@@ -331,6 +358,7 @@ class Importer(object):
                     command += ['-srid', self.default['SRID']]
                     command += ['-diffdir', self.default['SETTINGS']]
                     command += ['-mapping', self.mapping_file]
+                    command += ['-limitto', self.clip_json_file]
                     command += ['-connection', self.postgis_uri]
                     command += [join(self.default['IMPORT_QUEUE'], diff)]
 
@@ -344,10 +372,8 @@ class Importer(object):
                         # Update the timestamp in the file.
                         database_timestamp = diff.split('.')[0].split('->-')[1]
                         self.update_timestamp(database_timestamp)
-
-                        if self.clip_shape_file:
+                        if osm_clip_table == 1:
                             self.perform_clip_in_db()
-
                         self.info('Import diff successful : %s' % diff)
                     else:
                         msg = 'An error occured in imposm with a diff.'
