@@ -26,7 +26,6 @@ from os.path import join, exists, abspath, isabs
 from psycopg2 import connect, OperationalError
 from subprocess import call
 from time import sleep
-from pathlib import Path
 
 
 class Importer(object):
@@ -97,7 +96,7 @@ class Importer(object):
             self.error(msg)
         else:
             self.info('Clip: ' + self.default['CLIP'])
-            # Check valid CLIP.
+
         # Check valid QGIS_STYLE.
         if self.default['QGIS_STYLE'] not in ['yes', 'no']:
             msg = 'QGIS_STYLE not supported : %s' % self.default['QGIS_STYLE']
