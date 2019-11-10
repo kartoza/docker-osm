@@ -83,28 +83,19 @@ you don't set a clipping area, you will end with data from all over the world.
 
 ### Clipping
 
-Imposm support importing limiting the features to be imported using a geojson file. 
+During the initial import or post update imposm uses the flag `-limito` which allows 
+you to define a smaller area that you can work with.  
 This is always desirable to limit the features being imported into the database rather 
 than clipping them.
 
 **NB:** Ensure you add a geojson covering the area you intent to clip into the clip folder.
+The geojson can be the same extent of the administrative area of your country or it can be a 
+smaller extent
 
-You can put a shapefile in the clip folder. This shapefile will be 
-used for clipping every features after the import.
-This file has to be named 'clip.shp' and in the CRS you are using in the database (4326 by default).
-The docker compose uses dependency links which ensures that the database is started first before
-imposm the script now imports the shapefile into the database when the imposm container starts.
 
-If you add the `clip.shp` file after the containers has started you can still import the 
-shp using the provided makefile with the command:
-
-`make import_clip`.
-
-You can remove the clip file : `make remove_clip`.
-
-**NB:** It is encouraged to simplify the geometry for the `clip.shp` or `clip.geojson` as
-a simplified geometry is easier to process during the import or clipping. Rather use the 
-minimum bounding box for the area you intent to clip your dataset with.
+**NB:** It is encouraged to simplify the geometry for the `clip.geojson` as
+a simplified geometry is easier to process during the import. 
+Rather use the minimum bounding box for the area you intent to clip your dataset with.
 
 ### QGIS Styles
 
