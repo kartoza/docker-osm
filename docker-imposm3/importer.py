@@ -48,6 +48,7 @@ class Importer(object):
             'DBSCHEMA_PRODUCTION': 'public',
             'DBSCHEMA_IMPORT': 'import',
             'DBSCHEMA_BACKUP': 'backup',
+            'CLIP': 'no',
             'QGIS_STYLE': 'yes'
         }
         self.osm_file = None
@@ -85,7 +86,12 @@ class Importer(object):
             self.error(msg)
         else:
             self.info('Detect SRID: ' + self.default['SRID'])
-
+            # Check valid CLIP.
+        if self.default['CLIP'] not in ['yes', 'no']:
+            msg = 'CLIP not supported : %s' % self.default['CLIP']
+            self.error(msg)
+        else:
+            self.info('Clip: ' + self.default['CLIP'])
         # Check valid QGIS_STYLE.
         if self.default['QGIS_STYLE'] not in ['yes', 'no']:
             msg = 'QGIS_STYLE not supported : %s' % self.default['QGIS_STYLE']
@@ -156,6 +162,14 @@ class Importer(object):
         else:
             self.info('Not using QGIS default styles.')
 
+        if not self.clip_json_file and self.default['CLIP'] == 'yes':
+            msg = 'clip.geojson is missing and CLIP = yes.'
+            self.error(msg)
+        elif self.clip_json_file and self.default['QGIS_STYLE']:
+            self.info('Geojson for clipping: ' + self.clip_json_file)
+        else:
+            self.info('No *.geojson detected, so no clipping.')
+
         # In docker-compose, we should wait for the DB is ready.
         self.info('The checkup is OK.')
 
@@ -225,17 +239,24 @@ class Importer(object):
 
         if osm_tables != 1:
             # It means that the DB is empty. Let's import the PBF file.
-            self._first_pbf_import()
+
+            if self.clip_json_file:
+                self._first_pbf_import(['-limitto', self.clip_json_file])
+            else:
+                self._first_pbf_import([])
         else:
             self.info(
                 'The database is not empty. Let\'s import only diff files.')
 
         if self.default['TIME'] != '0':
-            self._import_diff()
+            if self.clip_json_file:
+                self._import_diff(['-limitto', self.clip_json_file])
+            else:
+                self._import_diff([])
         else:
             self.info('No more update to the database. Leaving.')
 
-    def _first_pbf_import(self):
+    def _first_pbf_import(self, args):
         """Run the first PBF import into the database."""
         command = ['imposm', 'import', '-diff', '-deployproduction']
         command += ['-overwritecache', '-cachedir', self.default['CACHE']]
@@ -247,10 +268,10 @@ class Importer(object):
         command += ['-diffdir', self.default['SETTINGS']]
         command += ['-mapping', self.mapping_file]
         command += ['-read', self.osm_file]
-        command += ['-limitto', self.clip_json_file]
         command += ['-write', '-connection', self.postgis_uri]
         self.info('The database is empty. Let\'s import the PBF : %s' % self.osm_file)
-        self.info(' '.join(command))
+
+        self.info(command.extend(args))
         if not call(command) == 0:
             msg = 'An error occured in imposm with the original file.'
             self.error(msg)
@@ -267,7 +288,7 @@ class Importer(object):
         if self.qgis_style:
             self.import_qgis_styles()
 
-    def _import_diff(self):
+    def _import_diff(self, args):
         # Finally launch the listening process.
         while True:
             import_queue = sorted(listdir(self.default['IMPORT_QUEUE']))
@@ -286,7 +307,7 @@ class Importer(object):
                     command += ['-connection', self.postgis_uri]
                     command += [join(self.default['IMPORT_QUEUE'], diff)]
 
-                    self.info(' '.join(command))
+                    self.info(command.extend(args))
 
                     if call(command) == 0:
                         move(
