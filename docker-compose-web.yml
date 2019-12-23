@@ -6,15 +6,37 @@ version: '2.1'
 
 services:
   qgisserver:
-    image: kartoza/qgis-server:2.18
+    image: camptocamp/qgis-server:3.6
     hostname: dockerosm_qgisserver
     container_name: dockerosm_qgisserver
+    environment:
+      - QGIS_PROJECT_FILE=/project/project.qgs
+      - GIS_SERVER_LOG_LEVEL=DEBUG
+      - MAX_REQUESTS_PER_PROCESS=100
     volumes:
       - ./logs:/var/log/apache2
       - ./web:/project
       - ./settings:/web/settings
+    depends_on:
+      db:
+        condition: service_healthy
     links:
       - db:db
     ports:
       - 8198:80
-    restart: unless-stopped
+    restart: on-failure
+
+  # Server vector tiles from PostgreSQL DB
+  martin:
+    image: urbica/martin
+    hostname: dockerosm_martin
+    container_name: dockerosm_martin
+    restart: on-failure
+    ports:
+      - 3000:3000
+    environment:
+      - WATCH_MODE=true
+      - DATABASE_URL=postgres://docker:docker@db/gis
+    depends_on:
+      db:
+        condition: service_healthy
