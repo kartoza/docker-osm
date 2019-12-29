@@ -37,6 +37,7 @@ class Downloader(object):
             'MAX_MERGE': '7',
             'COMPRESSION_LEVEL': '1',
             'BASE_URL': 'http://planet.openstreetmap.org/replication/',
+            'PBF_URL': None,
             'IMPORT_QUEUE': 'import_queue',
             'IMPORT_DONE': 'import_done',
             'SETTINGS': 'settings',
@@ -62,6 +63,21 @@ class Downloader(object):
         if self.default['TIME'] == '0':
             self.info('No more update to the database. Leaving.')
             quit()
+
+    def download_pbf(self):
+        """If PBF_URL is not null, it downloads the given URL."""
+        self.info(abspath(self.default['SETTINGS']))
+        self.info(listdir(abspath(self.default['SETTINGS'])))
+        if self.default['PBF_URL']:
+            command = ['curl']
+            command += [self.default['PBF_URL']]
+            command += ['-o {}/data.pbf'.format(abspath(self.default['SETTINGS']))]
+            self.info(' '.join(command))
+            if call(command) != 0:
+                self.info('An error occurred while downloading the PBF: {}.'.format(self.default['PBF_URL']))
+                quit()
+        else:
+            self.info('PBF_URL not defined. The file settings/data.pbf must be here.')
 
     def check_settings(self):
         """Perform various checking."""
@@ -169,5 +185,6 @@ class Downloader(object):
 if __name__ == '__main__':
     downloader = Downloader()
     downloader.overwrite_environment()
+    downloader.download_pbf()
     downloader.check_settings()
     downloader.download()

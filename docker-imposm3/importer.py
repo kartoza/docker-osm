@@ -68,6 +68,12 @@ class Importer(object):
         print(stderr.write(message))
         exit()
 
+    def wait_for_pbf_file(self):
+        """Wait for a PBF file."""
+        while not exists('/home/settings/data.pbf'):
+            self.info('Waiting 30 seconds for settings/data.pbf')
+            sleep(30)
+
     def overwrite_environment(self):
         """Overwrite default values from the environment."""
         for key in list(environ.keys()):
@@ -329,6 +335,7 @@ class Importer(object):
 if __name__ == '__main__':
     importer = Importer()
     importer.overwrite_environment()
+    importer.wait_for_pbf_file()
     importer.check_settings()
     importer.create_timestamp()
     importer.check_postgis()

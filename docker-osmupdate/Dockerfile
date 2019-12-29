@@ -17,8 +17,8 @@ RUN apt -y install ca-certificates rpl pwgen python3
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-# Install osmupdate
-RUN apt -y install osmctools wget gzip gcc libc-dev zlib1g-dev
+# Install osmupdate, curl is needed to download the PDF(wget is not working as expected)
+RUN apt -y install osmctools wget gzip gcc libc-dev zlib1g-dev curl
 WORKDIR /home
 ADD osmupdate.c /home/osmupdate.c
 ADD osmconvert.c /home/osmconvert.c
