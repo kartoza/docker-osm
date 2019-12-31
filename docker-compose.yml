@@ -8,11 +8,12 @@ volumes:
   pg:
   grafana:
   pw2:
+  osm_settings:
 
 services:
   db:
     # About the postgresql version, it should match in the dockerfile of docker-imposm3
-    image: kartoza/postgis:11.0-2.5
+    image: kartoza/postgis:12.0
     hostname: db
     container_name: dockerosm_db
     environment:
@@ -30,19 +31,36 @@ services:
     healthcheck:
         test: "exit 0"
 
+  osm_downloader:
+    image: kartoza/docker-osm:pbf-downloader
+    build: docker-osm-pbf
+    container_name: dockerosm_pbf_download
+    volumes:
+      # These are sharable to other containers
+      - settings:/home/settings
+    environment:
+      # Read the README in docker-osm-pbf
+      - CONTINENT=africa
+      - COUNTRY=lesotho
+      - BASE_URL='http://download.geofabrik.de'
+      - MAPPING_URL='https://raw.githubusercontent.com/kartoza/docker-osm/develop/settings'
+      - GEOJSON_URL=''
+
   imposm:
     image: kartoza/docker-osm:imposm-latest
     build: docker-imposm3
     container_name: dockerosm_imposm
     volumes:
       # These are sharable to other containers
-      - ./settings:/home/settings
+      - osm_settings:/home/settings
       - import_done:/home/import_done
       - import_queue:/home/import_queue
       - cache:/home/cache
     depends_on:
         db:
           condition: service_healthy
+        osm_downloader:
+          condition: service_started
     environment:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
@@ -81,13 +99,15 @@ services:
     container_name: dockerosm_osmupdate
     volumes:
       # These are sharable to other containers
-      - ./settings:/home/settings
+      - osm_settings:/home/settings
       - import_done:/home/import_done
       - import_queue:/home/import_queue
       - cache:/home/cache
     depends_on:
       db:
         condition: service_healthy
+      osm_downloader:
+        condition: service_started
     environment:
       # These are all currently the defaults but listed here for your
       # convenience if you want to change them
