@@ -58,8 +58,6 @@ services:
     depends_on:
         db:
           condition: service_healthy
-        osm_downloader:
-          condition: service_started
     environment:
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
@@ -91,6 +89,7 @@ services:
       - QGIS_STYLE=yes
       # Use clip in the database - To use this you should have run make import_clip to add your clip to the DB
       - CLIP=no
+    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
 
   osmupdate:
     build: docker-osmupdate
@@ -105,8 +104,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      osm_downloader:
-        condition: service_started
     environment:
       # These are all currently the defaults but listed here for your
       # convenience if you want to change them
@@ -127,6 +124,7 @@ services:
       # seconds between 2 executions of the script
       # if 0, then no update will be done, only the first initial import from the PBF
       - TIME=120
+    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/download.py"
   pgwatch2:
     image: cybertec/pgwatch2-postgres
     hostname: pgwatch2
