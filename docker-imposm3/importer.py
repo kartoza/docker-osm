@@ -308,7 +308,7 @@ class Importer(object):
                     command += [join(self.default['IMPORT_QUEUE'], diff)]
 
                     self.info(command.extend(args))
-
+                    print(command)
                     if call(command) == 0:
                         move(
                             join(self.default['IMPORT_QUEUE'], diff),
