@@ -24,7 +24,6 @@ services:
       # - ALLOW_IP_RANGE= 0.0.0.0/0
     volumes:
       - osm-postgis-data:/var/lib/postgresql
-      - ./settings:/home/settings
     # Uncomment to use the postgis database from outside the docker network
     # ports:
     #  - "35432:5432"
@@ -37,13 +36,13 @@ services:
     container_name: dockerosm_pbf_download
     volumes:
       # These are sharable to other containers
-      - settings:/home/settings
+      - osm_settings:/home/settings
     environment:
       # Read the README in docker-osm-pbf
       - CONTINENT=africa
       - COUNTRY=lesotho
-      - BASE_URL='http://download.geofabrik.de'
-      - MAPPING_URL='https://raw.githubusercontent.com/kartoza/docker-osm/develop/settings'
+      - BASE_URL=http://download.geofabrik.de
+      - MAPPING_URL=https://raw.githubusercontent.com/kartoza/docker-osm/develop/settings
       - GEOJSON_URL=''
 
   imposm:
