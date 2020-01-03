@@ -303,12 +303,10 @@ class Importer(object):
                     command += ['-srid', self.default['SRID']]
                     command += ['-diffdir', self.default['SETTINGS']]
                     command += ['-mapping', self.mapping_file]
-                    command += ['-limitto', self.clip_json_file]
                     command += ['-connection', self.postgis_uri]
                     command += [join(self.default['IMPORT_QUEUE'], diff)]
 
                     self.info(command.extend(args))
-
                     if call(command) == 0:
                         move(
                             join(self.default['IMPORT_QUEUE'], diff),
