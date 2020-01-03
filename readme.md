@@ -12,8 +12,9 @@ a smaller extent than the one specified by the PBF) and run the docker compose p
 ## Quick setup
 
 As a quick example, we are going to setup Docker-OSM with default values everywhere:
-* Download a PBF file from http://download.geofabrik.de/
-* Put the file in the `settings` folder.
+* Run the docker-compose file and make sure the environment variables are setup properly for
+osm_downloader to download the correct pbf file.
+
 * If you want to connect from your local QGIS Desktop:
   * In the file `docker-compose.yml`, uncomment the block:
 
@@ -22,8 +23,9 @@ As a quick example, we are going to setup Docker-OSM with default values everywh
 ports:
  - "35432:5432"
 ```
-* Do `make run` in the build directory. This will download and execute the docker-osm project. It might be very long depending of your bandwidth and the PBF you are importing.
-* In QGIS, add a new PostGIS connexion: `localhost`, database `gis`, port `35432`, `docker` for both username and password.
+* Do `make run` in the build directory. This will download and execute the docker-osm project. 
+It might be very long depending of your bandwidth and the PBF you are importing.
+* In QGIS, add a new PostGIS connection: `localhost`, database `gis`, port `35432`, `docker` for both username and password.
 * That's it! You have an OSM database, up and running. The update is done every 2 minutes from the main OSM website.
 
 For further reading and customizations, read below.
@@ -47,15 +49,11 @@ your existing docker-compose project.
 In this example we will set up an OSM database for South Africa that 
 will pull for updates every 2 minutes.
 
-First get a PBF file from your area and put this file in the 'settings' folder.
+Specify a PBF file for your area in the environment variables for `osm_downloader` container.
 You can download some PBF files on these URLS for instance :
 * http://download.geofabrik.de/
 * http://download.openstreetmap.fr/extracts/
 
-```bash
-cd settings
-wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
-```
 
 You must put only one PBF file in the settings folder. Only the last one will be read.
 
@@ -122,7 +120,7 @@ Now build the docker images needed to run the application:
 
 ```bash
 docker-compose build
-docker-compose up
+docker-compose up 
 ```
 
 In production you should daemonize the services when bringing them up:

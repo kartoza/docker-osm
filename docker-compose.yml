@@ -5,10 +5,8 @@ volumes:
   import_done:
   import_queue:
   cache:
-  pg:
-  grafana:
-  pw2:
   osm_settings:
+  pgadmin_data:
 
 services:
   db:
@@ -40,7 +38,7 @@ services:
     environment:
       # Read the README in docker-osm-pbf
       - CONTINENT=africa
-      - COUNTRY=lesotho
+      - COUNTRY=south-africa
       - BASE_URL=http://download.geofabrik.de
       - MAPPING_URL=https://raw.githubusercontent.com/kartoza/docker-osm/develop/settings
       - GEOJSON_URL=''
@@ -125,30 +123,18 @@ services:
       # if 0, then no update will be done, only the first initial import from the PBF
       - TIME=120
     command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/download.py"
-  pgwatch2:
-    image: cybertec/pgwatch2-postgres
-    hostname: pgwatch2
+
+  pgadmin4:
+    image: dpage/pgadmin4:4.16
+    hostname: pgadmin4
     volumes:
-      - pg:/var/lib/postgresql
-      - grafana:/var/lib/grafana
-      - pw2:/pgwatch2/persistent-config
+      - pgadmin_data:/var/lib/pgadmin
     environment:
-      - PW2_TESTDB=false
-      - PW2_PG_SCHEMA_TYPE=metric-dbname-time
-      - PW2_WEBNOANONYMOUS=true
-      - PW2_WEBUSER=admin
-      - PW2_WEBPASSWORD=pgwatch2
-      - PW2_WEBNOCOMPONENTLOGS=false
-      - PW2_WEBHOST=0.0.0.0
-      - PW2_WEBPORT=8080
-      - PW2_GRAFANANOANONYMOUS=true
-      - PW2_GRAFANAUSER=admin
-      - PW2_GRAFANAPASSWORD=pgwatch2
-      - PW2_GRAFANA_BASEURL=http://0.0.0.0:3000
-    restart: on-failure
+      - PGADMIN_DEFAULT_EMAIL=docker@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=docker
     ports:
-      - 3000:3000
-      - 8082:8080
+      - 6500:80
+    restart: on-failure
     depends_on:
       db:
         condition: service_healthy
