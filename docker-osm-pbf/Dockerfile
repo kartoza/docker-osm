@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk --no-cache add --update bash
+RUN apk --no-cache add --update bash curl
 
 ENV BASE_URL='http://download.geofabrik.de'
 ENV CONTINENT=''
