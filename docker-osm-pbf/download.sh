@@ -34,7 +34,7 @@ if [[ ! -f ${CONTINENT_LOCKFILE} && -z ${COUNTRY} ]]; then \
 
   echo "${BASE_URL}/${CONTINENT}-latest.osm.pbf"
   wget  -c --no-check-certificate ${BASE_URL}/${CONTINENT}-latest.osm.pbf -O /tmp/${CONTINENT}.pbf
-  mv /tmp/$CONTINENT}.pbf /home/settings/country.pbf
+  mv /tmp/${CONTINENT}.pbf /home/settings/country.pbf
   touch ${CONTINENT_LOCKFILE}
 
 
