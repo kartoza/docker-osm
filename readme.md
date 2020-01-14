@@ -2,14 +2,19 @@
 
 A docker compose project to setup an OSM PostGIS database with automatic
 updates from OSM periodically.
-The only file you need is a PBF file and run the docker compose project.
+The only files you need is a PBF file, geojson (if you intent to restrict data download to
+a smaller extent than the one specified by the PBF) and run the docker compose project.
 
+## General architecture
+
+![Alt text](/docs/architecture.png?raw=true "Optional Title")
 
 ## Quick setup
 
 As a quick example, we are going to setup Docker-OSM with default values everywhere:
-* Download a PBF file from http://download.geofabrik.de/
-* Put the file in the `settings` folder.
+* Run the docker-compose file and make sure the environment variables are setup properly for
+osm_downloader to download the correct pbf file.
+
 * If you want to connect from your local QGIS Desktop:
   * In the file `docker-compose.yml`, uncomment the block:
 
@@ -18,8 +23,9 @@ As a quick example, we are going to setup Docker-OSM with default values everywh
 ports:
  - "35432:5432"
 ```
-* Do `make run` in the build directory. This will download and execute the docker-osm project. It might be very long depending of your bandwidth and the PBF you are importing.
-* In QGIS, add a new PostGIS connexion: `localhost`, database `gis`, port `35432`, `docker` for both username and password.
+* Do `make run` in the build directory. This will download and execute the docker-osm project. 
+It might be very long depending of your bandwidth and the PBF you are importing.
+* In QGIS, add a new PostGIS connection: `localhost`, database `gis`, port `35432`, `docker` for both username and password.
 * That's it! You have an OSM database, up and running. The update is done every 2 minutes from the main OSM website.
 
 For further reading and customizations, read below.
@@ -43,15 +49,11 @@ your existing docker-compose project.
 In this example we will set up an OSM database for South Africa that 
 will pull for updates every 2 minutes.
 
-First get a PBF file from your area and put this file in the 'settings' folder.
+Specify a PBF file for your area in the environment variables for `osm_downloader` container.
 You can download some PBF files on these URLS for instance :
 * http://download.geofabrik.de/
 * http://download.openstreetmap.fr/extracts/
 
-```bash
-cd settings
-wget -c -O country.pbf http://download.openstreetmap.fr/extracts/africa/south_africa.osm.pbf
-```
 
 You must put only one PBF file in the settings folder. Only the last one will be read.
 
@@ -62,6 +64,12 @@ You can find the documentation about the mapping configuration on the imposm
 website: https://imposm.org/docs/imposm3/latest/mapping.html
 The default file in Docker-OSM is coming from
 https://raw.githubusercontent.com/omniscale/imposm3/master/example-mapping.yml
+
+**Note** that you can't import OSM metadata such as author, timestamp or version.
+This is a limitation from ImpOSM, check the feature request on the [Imposm repository](https://github.com/omniscale/imposm3/issues/58).
+Imposm is designed for spatial analysis, not for OSM contribution analysis.
+If you need such a feature, you need to use another database schema supporting OSM Metadata. 
+You can check the [OSM Wiki](https://wiki.openstreetmap.org/wiki/Databases_and_data_access_APIs#Database_Schemas) for "Lossless" schemas.
 
 ### Updates
 
@@ -74,14 +82,19 @@ you don't set a clipping area, you will end with data from all over the world.
 
 ### Clipping
 
-You can put a shapefile in the clip folder. This shapefile will be 
-used for clipping every features after the import.
-This file has to be named 'clip.shp' and in the CRS you are using in the database (4326 by default).
-When the database container is running, import the shapefile in the database using the command : 
+During the initial import or post update imposm uses the flag `-limito` which allows 
+you to define a smaller area that you can work with.  
+This is always desirable to limit the features being imported into the database rather 
+than clipping them.
 
-`make import_clip`.
+**NB:** Ensure you add a geojson covering the area you intent to clip into the settings folder.
+The geojson can be the same extent of the administrative area of your country or it can be a 
+smaller extent. The CRS of the geojson should always be EPSG:4326.
 
-You can remove the clip file : `make remove_clip`.
+
+**NB:** It is encouraged to simplify the geometry for the `clip.geojson` as
+a simplified geometry is easier to process during the import. 
+Rather use the minimum bounding box for the area you intent to clip your dataset with.
 
 ### QGIS Styles
 
@@ -95,9 +108,11 @@ make remove_styles
 make backup_styles
 ```
 
-### SQL Trigger
+### SQL Trigger, functions, views...
 
-You can add PostGIS functions, triggers, materialized views in the SQL file.
+You can add PostGIS functions, triggers, materialized views in a 
+SQL file called `post-pbf-import.sql`. 
+It will be imported automatically in the database.
 
 ### Build and run
 
@@ -105,7 +120,7 @@ Now build the docker images needed to run the application:
 
 ```bash
 docker-compose build
-docker-compose up
+docker-compose up 
 ```
 
 In production you should daemonize the services when bringing them up:
@@ -228,15 +243,23 @@ With -e, you can add some settings to PostGIS:
 ```bash
  - ALLOW_IP_RANGE= 0.0.0.0/0
 ```
+More environment variables for Kartoza/postgis image can be found from https://github.com/kartoza/docker-postgis#environment-variables
 
-# QGIS Server
+# QGIS Server and Martin Vector tiles
 
-You can run a QGIS Server front end to the OSM mirroir by using the provided
+You can run a QGIS Server front end or martin vector tiles to the OSM mirror by using the provided
 docker-compose-web.yml file. For example:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose-web.yml qgisserver up
+docker-compose -f docker-compose.yml -f docker-compose-web.yml qgisserver  up
 ```
+
+or
+```bash
+docker-compose -f docker-compose.yml -f docker-compose-web.yml martin  up
+```
+For more information about martin configuration and usage can be found from https://github.com/urbica/martin
+
 
 # Credits
 

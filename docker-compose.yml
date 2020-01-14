@@ -5,11 +5,13 @@ volumes:
   import_done:
   import_queue:
   cache:
+  osm_settings:
+  pgadmin_data:
 
 services:
   db:
     # About the postgresql version, it should match in the dockerfile of docker-imposm3
-    image: kartoza/postgis:9.6-2.4
+    image: kartoza/postgis:12.0
     hostname: db
     container_name: dockerosm_db
     environment:
@@ -19,12 +21,27 @@ services:
       # Uncomment to expose the postgis database on the network
       # - ALLOW_IP_RANGE= 0.0.0.0/0
     volumes:
-      - 'osm-postgis-data:/var/lib/postgresql'
+      - osm-postgis-data:/var/lib/postgresql
     # Uncomment to use the postgis database from outside the docker network
     # ports:
     #  - "35432:5432"
     healthcheck:
-        test: "exit 0"
+      test: "exit 0"
+
+  osm_downloader:
+    image: kartoza/docker-osm:pbf-downloader
+    build: docker-osm-pbf
+    container_name: dockerosm_pbf_download
+    volumes:
+      # These are sharable to other containers
+      - osm_settings:/home/settings
+    environment:
+      # Read the README in docker-osm-pbf
+      - CONTINENT=africa
+      - COUNTRY=south-africa
+      - BASE_URL=http://download.geofabrik.de
+      - MAPPING_URL=https://raw.githubusercontent.com/kartoza/docker-osm/develop/settings
+      - GEOJSON_URL=''
 
   imposm:
     image: kartoza/docker-osm:imposm-latest
@@ -32,7 +49,7 @@ services:
     container_name: dockerosm_imposm
     volumes:
       # These are sharable to other containers
-      - ./settings:/home/settings
+      - osm_settings:/home/settings
       - import_done:/home/import_done
       - import_queue:/home/import_queue
       - cache:/home/cache
@@ -68,8 +85,9 @@ services:
       - DBSCHEMA_BACKUP=backup
       # Install some styles if you are using the default mapping. It can be 'yes' or 'no'
       - QGIS_STYLE=yes
-      # Use clip in the database
+      # Use clip in the database - To use this you should have run make import_clip to add your clip to the DB
       - CLIP=no
+    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
 
   osmupdate:
     build: docker-osmupdate
@@ -77,7 +95,7 @@ services:
     container_name: dockerosm_osmupdate
     volumes:
       # These are sharable to other containers
-      - ./settings:/home/settings
+      - osm_settings:/home/settings
       - import_done:/home/import_done
       - import_queue:/home/import_queue
       - cache:/home/cache
@@ -104,6 +122,22 @@ services:
       # seconds between 2 executions of the script
       # if 0, then no update will be done, only the first initial import from the PBF
       - TIME=120
+    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/download.py"
+
+  pgadmin4:
+    image: dpage/pgadmin4:4.16
+    hostname: pgadmin4
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=docker@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=docker
+    ports:
+      - 6500:80
+    restart: on-failure
+    depends_on:
+      db:
+        condition: service_healthy
 
   osmenrich:
     build: docker-osmenrich
@@ -116,7 +150,7 @@ services:
       - cache:/home/cache
     depends_on:
       db:
-          condition: service_healthy
+        condition: service_healthy
     environment:
       # These are all currently the defaults but listed here for your
       # convenience if you want to change them

@@ -1,9 +1,12 @@
 FROM golang:1.10
 MAINTAINER Etienne Trimaille <etienne.trimaille@gmail.com>
 
+RUN apt-get update
+RUN wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - |  apt-key add -
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
 RUN apt update && apt install -y python3-pip \
       libprotobuf-dev libleveldb-dev libgeos-dev \
-      libpq-dev python3-dev postgresql-client-9.6 python-setuptools \
+      libpq-dev python3-dev postgresql-client-11 python-setuptools \
       gdal-bin \
       --no-install-recommends
 

@@ -46,6 +46,7 @@ class Enrich(object):
     }
     latest_diff_file = None
     cache_folder = None
+    out_of_scope_osm_folder = None
 
     def __init__(self):
         # Default values which can be overwritten by environment variable.
@@ -60,7 +61,8 @@ class Enrich(object):
             'OSM_API_URL': 'https://api.openstreetmap.org/api/0.6/',
             'IMPORT_DONE': 'import_done',
             'CACHE': 'cache',
-            'MAX_DIFF_FILE_SIZE': 100000000
+            'MAX_DIFF_FILE_SIZE': 100000000,
+            'CACHE_MODIFY_CHECK': ''
         }
         self.mapping_file = None
         self.mapping_database_schema = {}
@@ -99,7 +101,21 @@ class Enrich(object):
             cache_folder = join(cache_folder, 'enrich')
             if not exists(cache_folder):
                 mkdir(cache_folder)
+
+            # out_of_scope_osm
+            out_of_scope_osm_folder = join(
+                cache_folder, 'out_of_scope_osm')
+            if not exists(out_of_scope_osm_folder):
+                mkdir(out_of_scope_osm_folder)
+            self.out_of_scope_osm_folder = out_of_scope_osm_folder
+
         self.cache_folder = cache_folder
+
+        # check using not found cache for modify
+        if self.default['CACHE_MODIFY_CHECK'].lower() == 'true':
+            self.default['CACHE_MODIFY_CHECK'] = True
+        else:
+            self.default['CACHE_MODIFY_CHECK'] = False
 
     def get_cache_path(self):
         return join(self.cache_folder, 'cache')
@@ -114,6 +130,36 @@ class Enrich(object):
                 if exists(cache_file):
                     return cache_file
         return None
+
+    def is_non_recognized_id(self, osm_type, osm_id):
+        """ Return if osm id and type is unrecognized id
+        """
+        if not self.default['CACHE_MODIFY_CHECK']:
+            return False
+
+        if self.out_of_scope_osm_folder:
+            if exists(
+                    join(self.out_of_scope_osm_folder,
+                         '%s-%s' % (osm_type, osm_id))):
+                return True
+        return False
+
+    def get_or_create_non_recognized_id(self, osm_type, osm_id):
+        """ Create file as cache for non recognized id
+        """
+        if not self.default['CACHE_MODIFY_CHECK']:
+            return
+
+        if self.out_of_scope_osm_folder:
+            filename = join(
+                self.out_of_scope_osm_folder,
+                '%s-%s' % (osm_type, osm_id))
+            if not exists(filename):
+                try:
+                    f = open(filename, 'w+')
+                    f.close()
+                except IOError:
+                    self.info('%s can\'t be created' % filename)
 
     def check_mapping_file_data(self):
         """Perform converting yaml data into json
@@ -275,7 +321,7 @@ class Enrich(object):
         for field, value in new_data.items():
             try:
                 value = value.replace('\'', '\'\'')
-            except TypeError:
+            except (TypeError, AttributeError):
                 pass
             sets.append('%s=\'%s\'' % (field, value))
         connection = self.create_connection()
@@ -425,6 +471,11 @@ class Enrich(object):
             osm_data, '@id')
         for table, table_data in self.mapping_database_schema.items():
             if osm_data_type == table_data['osm_type']:
+
+                # check if this osm is not found on database
+                if self.is_non_recognized_id(osm_data_type, osm_id):
+                    continue
+
                 connection = self.create_connection()
                 cursor = connection.cursor()
                 try:
@@ -436,6 +487,9 @@ class Enrich(object):
                         new_data = self.get_osm_enrich_new_data(osm_data, row)
                         self.update_enrich_into_database(
                             table, table_data['osm_id_columnn'], osm_id, new_data)
+                    else:
+                        # if this id is not found add in cache
+                        self.get_or_create_non_recognized_id(osm_data_type, osm_id)
                 except Exception as e:
                     self.info('error when processing %s: %s' % (osm_id, e))
                 connection.close()
@@ -452,7 +506,6 @@ class Enrich(object):
         if not exists(target_folder):
             self.info('Folder %s is not ready yet' % target_folder)
             return
-
         for filename in sorted(listdir(target_folder)):
             try:
                 if filename.endswith('.gz'):
@@ -493,6 +546,7 @@ class Enrich(object):
                     cache_file = self.get_cache_path()
                     f = open(cache_file, 'w')
                     f.write(next_latest_diff_file)
+                    f.close()
                 except IOError:
                     self.info('cache file can\'t be created')
 

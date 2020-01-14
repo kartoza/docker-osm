@@ -16,7 +16,6 @@ status:
 	@echo "------------------------------------------------------------------"
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) ps
 
-
 build:
 	@echo
 	@echo "------------------------------------------------------------------"
@@ -81,24 +80,6 @@ live_logs:
 	@docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_ID) logs -f
 
 
-###
-#    CLIPPING
-###
-
-
-import_clip:
-	@echo
-	@echo "------------------------------------------------------------------"
-	@echo "Importing clip shapefile into the database"
-	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)_imposm /usr/bin/ogr2ogr -progress -skipfailures -lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI -f PostgreSQL PG:"host=db user=docker password=docker dbname=gis" /home/settings/clip/clip.shp
-
-remove_clip:
-	@echo
-	@echo "------------------------------------------------------------------"
-	@echo "Removing clip shapefile from the database"
-	@echo "------------------------------------------------------------------"
-	@docker exec -t -i $(PROJECT_ID)_db /bin/su - postgres -c "psql gis -c 'DROP TABLE IF EXISTS clip;'"
 
 ###
 #    STATS
@@ -112,12 +93,13 @@ timestamp:
 	@echo "------------------------------------------------------------------"
 	@docker exec -t -i $(PROJECT_ID)_imposm cat /home/settings/timestamp.txt
 
+
 ###
 #    STYLES
 ###
 
 
-import_styles: remove_styles
+import_styles: import_styles
 	@echo
 	@echo "------------------------------------------------------------------"
 	@echo "Importing QGIS styles"

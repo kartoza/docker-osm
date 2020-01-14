@@ -57,4 +57,4 @@ if url:
         f.write(diff)
 
 else:
-    print('This area is unkown in geofabrik or in our script. Check with the list argument.')
+    print('This area is unknown in geofabrik or in our script. Check with the list argument.')
