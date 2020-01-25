@@ -56,6 +56,7 @@ class Importer(object):
         self.post_import_file = None
         self.clip_json_file = None
         self.qgis_style = None
+        self.clip_sql_file = None
         self.cursor = None
         self.postgis_uri = None
 
@@ -133,6 +134,9 @@ class Importer(object):
             if f == 'qgis_style.sql':
                 self.qgis_style = join(self.default['SETTINGS'], f)
 
+            if f == 'clip.sql':
+                self.clip_sql_file = join(self.default['SETTINGS'], f)
+
         if not self.osm_file:
             msg = 'OSM file *.pbf is missing in %s' % self.default['SETTINGS']
             self.error(msg)
@@ -149,6 +153,7 @@ class Importer(object):
             self.info('No custom SQL files post-pbf-import.sql detected in %s' % self.default['SETTINGS'])
         else:
             self.info('SQL Post Import: ' + self.post_import_file)
+
         if not self.clip_json_file:
             self.info('No json files to limit import detected in %s' % self.default['SETTINGS'])
         else:
@@ -169,6 +174,14 @@ class Importer(object):
             self.info('Geojson for clipping: ' + self.clip_json_file)
         else:
             self.info('No *.geojson detected, so no clipping.')
+
+        if not self.clip_sql_file and self.default['CLIP'] == 'yes':
+            msg = 'SQL for clipping is missing and CLIP = yes.'
+            self.error(msg)
+        elif self.clip_sql_file and self.default['QGIS_STYLE']:
+            self.info('SQL for clipping: ' + self.clip_sql_file)
+        else:
+            self.info('No *.sql detected, so no clipping.')
 
         # In docker-compose, we should wait for the DB is ready.
         self.info('The checkup is OK.')
@@ -226,12 +239,39 @@ class Importer(object):
         command += ['-f', self.qgis_style]
         call(command)
 
+    def _import_clip_function(self):
+        """Create function clean_tables().
+
+        The user must import the clip shapefile to the database!
+        """
+        self.info('Import clip SQL function.')
+        command = ['psql']
+        command += ['-h', self.default['POSTGRES_HOST']]
+        command += ['-U', self.default['POSTGRES_USER']]
+        command += ['-d', self.default['POSTGRES_DBNAME']]
+        command += ['-f', self.clip_sql_file]
+        call(command)
+
+    def perform_cron(self):
+        cron_sql = """ SELECT cron.schedule('*/59 * * * *', $$select clean_tables()$$); """
+        self.cursor.execute(cron_sql)
+
     def locate_table(self, name):
         """Check for tables in the DB table exists in the DB"""
         sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables where table_name like  'TEMP_TABLE'); """
         self.cursor.execute(sql.replace('TEMP_TABLE', '%s' % name))
         # noinspection PyUnboundLocalVariable
         return self.cursor.fetchone()[0]
+
+    def clip_importer(self):
+        clipper = ''' ogr2ogr -progress -skipfailures -lco GEOMETRY_NAME=geom -nln clip -nlt PROMOTE_TO_MULTI \
+        -f PostgreSQL PG:"host=%s user=%s password=%s dbname=%s port=5432" %s ''' % (self.default['POSTGRES_HOST'],
+                                                                                     self.default['POSTGRES_USER'],
+                                                                                     self.default['POSTGRES_PASS'],
+                                                                                     self.default['POSTGRES_DBNAME'],
+                                                                                     self.clip_json_file)
+
+        call(clipper, shell=True)
 
     def run(self):
         """First checker."""
@@ -249,10 +289,7 @@ class Importer(object):
                 'The database is not empty. Let\'s import only diff files.')
 
         if self.default['TIME'] != '0':
-            if self.clip_json_file:
-                self._import_diff(['-limitto', self.clip_json_file])
-            else:
-                self._import_diff([])
+            self._import_diff()
         else:
             self.info('No more update to the database. Leaving.')
 
@@ -288,7 +325,15 @@ class Importer(object):
         if self.qgis_style:
             self.import_qgis_styles()
 
-    def _import_diff(self, args):
+        if self.clip_sql_file:
+            self._import_clip_function()
+
+        clip_tables = self.locate_table('clip')
+        if clip_tables != 1 and self.clip_json_file:
+            self.clip_importer()
+            self.perform_cron()
+
+    def _import_diff(self):
         # Finally launch the listening process.
         while True:
             import_queue = sorted(listdir(self.default['IMPORT_QUEUE']))
@@ -306,7 +351,7 @@ class Importer(object):
                     command += ['-connection', self.postgis_uri]
                     command += [join(self.default['IMPORT_QUEUE'], diff)]
 
-                    self.info(command.extend(args))
+                    self.info(' '.join(command))
                     if call(command) == 0:
                         move(
                             join(self.default['IMPORT_QUEUE'], diff),
