@@ -6,6 +6,7 @@ cache
 import_done
 import_queue
 settings/*.pbf
+settings/.fuse*
 BACKUP-STYLES.sql
 settings/last.state.txt
 settings/timestamp.txt

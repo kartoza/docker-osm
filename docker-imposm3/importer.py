@@ -253,7 +253,12 @@ class Importer(object):
         call(command)
 
     def perform_cron(self):
-        cron_sql = """ SELECT cron.schedule('*/20 * * * *', $$select clean_tables()$$); """
+        self.info('Creating cron job for clipping tables')
+
+        cron_sql = """ insert into cron.job (schedule, command) select
+                        '*/10 * * * *', $$ select clean_tables() $$
+                        where not exists ( select schedule, command from cron.job where 
+                        schedule = '*/10 * * * *' and command = $$ select clean_tables() $$); """
         self.cursor.execute(cron_sql)
 
     def locate_table(self, name):
@@ -274,9 +279,12 @@ class Importer(object):
         call(clipper, shell=True)
 
     def create_lock_file(self):
-        importer_lockfile = path.join(self.default['SETTINGS'], '.importer.lock')
-        remove(importer_lockfile)
-        if not path.exists(importer_lockfile):
+        self.info('Create a file to indicate first PBF import is done !!!')
+        importer_lockfile = path.join(self.default['SETTINGS'], 'importer.lock')
+        if path.exists(importer_lockfile):
+            remove(importer_lockfile)
+            mknod(importer_lockfile)
+        else:
             mknod(importer_lockfile)
 
     def run(self):
@@ -338,6 +346,7 @@ class Importer(object):
             self._import_clip_function()
 
         clip_tables = self.locate_table('clip')
+
         if clip_tables != 1 and self.clip_json_file:
             self.clip_importer()
             self.perform_cron()
