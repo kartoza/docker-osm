@@ -20,7 +20,7 @@
 """
 
 from sys import exit, stderr
-from os import environ, listdir
+from os import environ, listdir, path, mknod, remove
 from shutil import move
 from os.path import join, exists, abspath, isabs
 from psycopg2 import connect, OperationalError
@@ -253,7 +253,7 @@ class Importer(object):
         call(command)
 
     def perform_cron(self):
-        cron_sql = """ SELECT cron.schedule('*/59 * * * *', $$select clean_tables()$$); """
+        cron_sql = """ SELECT cron.schedule('*/20 * * * *', $$select clean_tables()$$); """
         self.cursor.execute(cron_sql)
 
     def locate_table(self, name):
@@ -273,6 +273,12 @@ class Importer(object):
 
         call(clipper, shell=True)
 
+    def create_lock_file(self):
+        importer_lockfile = path.join(self.default['SETTINGS'], '.importer.lock')
+        remove(importer_lockfile)
+        if not path.exists(importer_lockfile):
+            mknod(importer_lockfile)
+
     def run(self):
         """First checker."""
         osm_tables = self.locate_table('osm_%')
@@ -282,8 +288,11 @@ class Importer(object):
 
             if self.clip_json_file:
                 self._first_pbf_import(['-limitto', self.clip_json_file])
+                self.create_lock_file()
             else:
                 self._first_pbf_import([])
+                self.create_lock_file()
+
         else:
             self.info(
                 'The database is not empty. Let\'s import only diff files.')
