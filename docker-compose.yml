@@ -145,7 +145,7 @@ services:
 
     volumes:
       # These are sharable to other containers
-      - ./settings:/home/settings
+      - osm_settings:/home/settings
       - import_done:/home/import_done
       - import_queue:/home/import_queue
       - cache:/home/cache
