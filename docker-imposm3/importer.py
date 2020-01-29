@@ -271,7 +271,8 @@ class Importer(object):
         command += ['-write', '-connection', self.postgis_uri]
         self.info('The database is empty. Let\'s import the PBF : %s' % self.osm_file)
 
-        self.info(command.extend(args))
+        command.extend(args)
+        self.info(command)
         if not call(command) == 0:
             msg = 'An error occured in imposm with the original file.'
             self.error(msg)
@@ -304,9 +305,10 @@ class Importer(object):
                     command += ['-diffdir', self.default['SETTINGS']]
                     command += ['-mapping', self.mapping_file]
                     command += ['-connection', self.postgis_uri]
+                    command.extend(args)
                     command += [join(self.default['IMPORT_QUEUE'], diff)]
 
-                    self.info(command.extend(args))
+                    self.info(command)
                     if call(command) == 0:
                         move(
                             join(self.default['IMPORT_QUEUE'], diff),
