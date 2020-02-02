@@ -20,7 +20,7 @@
 """
 
 from sys import exit, stderr
-from os import environ, listdir
+from os import environ, listdir, mknod
 from shutil import move
 from os.path import join, exists, abspath, isabs
 from psycopg2 import connect, OperationalError
@@ -233,6 +233,14 @@ class Importer(object):
         # noinspection PyUnboundLocalVariable
         return self.cursor.fetchone()[0]
 
+    def lockfile(self):
+        setup_lockfile = join(self.default['SETTINGS'], 'importer.lock')
+        if not exists(setup_lockfile):
+            mknod(setup_lockfile)
+        else:
+            remove(setup_lockfile)
+            mknod(setup_lockfile)
+
     def run(self):
         """First checker."""
         osm_tables = self.locate_table('osm_%')
@@ -278,6 +286,7 @@ class Importer(object):
             self.error(msg)
         else:
             self.info('Import PBF successful : %s' % self.osm_file)
+            self.lockfile()
 
         if self.post_import_file or self.qgis_style:
             # Set the password for psql

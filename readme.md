@@ -12,8 +12,19 @@ a smaller extent than the one specified by the PBF) and run the docker compose p
 ## Quick setup
 
 As a quick example, we are going to setup Docker-OSM with default values everywhere:
-* Run the docker-compose file and make sure the environment variables are setup properly for
-osm_downloader to download the correct pbf file.
+* Download a PBF file from http://download.geofabrik.de/
+* Put the file in the `settings` folder. 
+
+Alternatively you can execute the `settings_downloader.sh` script to download the pbf and the clip file
+``
+./settings_downloader.sh GEOJSON_URL CONTINENT COUNTRY ie
+./settings_downloader.sh https://github.com/kartoza/docker-osm/blob/develop/settings/clip.geojson africa south-africa
+`` 
+
+If you use rancher for container management you can use the provided docker-compose.yml which allows you to automatically
+download the settings onto the host machine by using environment variables.
+* Run the docker-compose-rancher file and make sure the environment variables are setup properly for
+osm_downloader to download the correct pbf file
 
 * If you want to connect from your local QGIS Desktop:
   * In the file `docker-compose.yml`, uncomment the block:
