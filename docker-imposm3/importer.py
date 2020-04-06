@@ -237,9 +237,6 @@ class Importer(object):
         setup_lockfile = join(self.default['SETTINGS'], 'importer.lock')
         if not exists(setup_lockfile):
             mknod(setup_lockfile)
-        else:
-            remove(setup_lockfile)
-            mknod(setup_lockfile)
 
     def run(self):
         """First checker."""
