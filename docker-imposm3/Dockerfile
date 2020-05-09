@@ -10,6 +10,12 @@ RUN apt update && apt install -y python3-pip \
       gdal-bin \
       --no-install-recommends
 
+ENV \
+    DOCKERIZE_VERSION=v0.6.1
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
 RUN ln -s /usr/lib/libgeos_c.so /usr/lib/libgeos.so
 
 WORKDIR $GOPATH
@@ -23,4 +29,5 @@ RUN pip3 install -r /home/requirements.txt
 ADD importer.py /home/
 
 WORKDIR /home
-CMD ["python3", "-u", "/home/importer.py"]
+
+CMD [ "dockerize", "-wait","file:///home/settings/country.pbf","python3" , "-u", "/home/importer.py" ]

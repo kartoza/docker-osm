@@ -72,8 +72,6 @@ services:
       - QGIS_STYLE=yes
       # Use clip in the database - To use this you should have run make import_clip to add your clip to the DB
       - CLIP=no
-    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
-
   osmupdate:
     build: docker-osmupdate
     image: kartoza/docker-osm:osmupdate-latest
@@ -107,10 +105,10 @@ services:
       # seconds between 2 executions of the script
       # if 0, then no update will be done, only the first initial import from the PBF
       - TIME=120
-    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/download.py"
+
 
   pgadmin4:
-    image: dpage/pgadmin4:4.16
+    image: dpage/pgadmin4:latest
     hostname: pgadmin4
     volumes:
       - pgadmin_data:/var/lib/pgadmin
@@ -146,4 +144,3 @@ services:
       # seconds between 2 executions of the script
       # if 0, then no update will be done, only the first initial import from the PBF
       - TIME=120
-    command: bash -c "while [ ! -f /home/settings/importer.lock ] ; do sleep 1; done && python3 -u /home/enrich.py"

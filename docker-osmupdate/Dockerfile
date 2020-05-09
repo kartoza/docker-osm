@@ -24,8 +24,13 @@ ADD osmupdate.c /home/osmupdate.c
 ADD osmconvert.c /home/osmconvert.c
 RUN gcc -x c - -o osmupdate osmupdate.c
 RUN gcc -x c - -O3 -o osmconvert osmconvert.c -lz
-
+ENV \
+    DOCKERIZE_VERSION=v0.6.1
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 # Add the python script which will call osmupdate
 ADD download.py /home/download.py
 
-CMD ["python3", "-u", "/home/download.py"]
+CMD [ "dockerize", "-wait","file:///home/settings/country.pbf", "python3" , "-u", "/home/download.py" ]
+
