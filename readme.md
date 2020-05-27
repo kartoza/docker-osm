@@ -13,7 +13,7 @@ a smaller extent than the one specified by the PBF) and run the docker compose p
 
 As a quick example, we are going to setup Docker-OSM with default values everywhere:
 * Download a PBF file from http://download.geofabrik.de/
-* Put the file in the `settings` folder. 
+* Put the file in the `settings` folder and rename it `country.pbf`. 
 
 Alternatively you can execute the `settings_downloader.sh` script to download the pbf and the clip file
 ``
