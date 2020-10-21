@@ -191,19 +191,21 @@ class Importer(object):
         """Test connection to PostGIS and create the URI."""
         try:
             connection = connect(
-                "dbname='%s' user='%s' host='%s' password='%s'" % (
+                "dbname='%s' user='%s' host='%s' port='%s' password='%s'" % (
                     self.default['POSTGRES_DBNAME'],
                     self.default['POSTGRES_USER'],
                     self.default['POSTGRES_HOST'],
+                    self.default['POSTGRES_PORT'],
                     self.default['POSTGRES_PASS']))
             self.cursor = connection.cursor()
         except OperationalError as e:
             self.error(e)
 
-        self.postgis_uri = 'postgis://%s:%s@%s/%s' % (
+        self.postgis_uri = 'postgis://%s:%s@%s:%s/%s' % (
             self.default['POSTGRES_USER'],
             self.default['POSTGRES_PASS'],
             self.default['POSTGRES_HOST'],
+            self.default['POSTGRES_PORT'],
             self.default['POSTGRES_DBNAME'])
 
     def import_custom_sql(self):
@@ -211,6 +213,7 @@ class Importer(object):
         self.info('Running the post import SQL file.')
         command = ['psql']
         command += ['-h', self.default['POSTGRES_HOST']]
+        command += ['-p', self.default['POSTGRES_PORT']]
         command += ['-U', self.default['POSTGRES_USER']]
         command += ['-d', self.default['POSTGRES_DBNAME']]
         command += ['-f', self.post_import_file]
@@ -221,6 +224,7 @@ class Importer(object):
         self.info('Installing QGIS styles.')
         command = ['psql']
         command += ['-h', self.default['POSTGRES_HOST']]
+        command += ['-p', self.default['POSTGRES_PORT']]
         command += ['-U', self.default['POSTGRES_USER']]
         command += ['-d', self.default['POSTGRES_DBNAME']]
         command += ['-f', self.qgis_style]
