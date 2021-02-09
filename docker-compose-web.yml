@@ -1,42 +1,112 @@
-# Usage:
+version: '3.9'
 
-# docker-compose -f docker-compose.yml -f docker-compose-web.yml
-
-version: '2.1'
+volumes:
+  osm-postgis-data:
+  import_done:
+  import_queue:
+  cache:
+  pgadmin_data:
 
 services:
-  qgisserver:
-    image: camptocamp/qgis-server:3.6
-    hostname: dockerosm_qgisserver
-    container_name: dockerosm_qgisserver
+  db:
+    image: kartoza/postgis:${POSTGRES_VERSION}
+    hostname: db
+    container_name: dockerosm_db
     environment:
-      - QGIS_PROJECT_FILE=/project/project.qgs
-      - GIS_SERVER_LOG_LEVEL=DEBUG
-      - MAX_REQUESTS_PER_PROCESS=100
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASS=${POSTGRES_PASS}
+      - POSTGRES_DBNAME=${POSTGRES_DBNAME}
+      - ALLOW_IP_RANGE=${ALLOW_IP_RANGE}
     volumes:
-      - ./logs:/var/log/apache2
-      - ./web:/project
-      - ./settings:/web/settings
-    depends_on:
-      db:
-        condition: service_healthy
-    links:
-      - db:db
+      - osm-postgis-data:/var/lib/postgresql
     ports:
-      - 8198:80
-    restart: on-failure
+      - ${DB_PORT}:5432
+    healthcheck:
+      test: "exit 0"
 
-  # Server vector tiles from PostgreSQL DB
+  imposm:
+    image: kartoza/docker-osm:imposm-latest
+    build: docker-imposm3
+    container_name: dockerosm_imposm
+    volumes:
+      - ./settings:/home/settings
+      - import_done:/home/import_done
+      - import_queue:/home/import_queue
+      - cache:/home/cache
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASS=${POSTGRES_PASS}
+      - POSTGRES_DBNAME=${POSTGRES_DBNAME}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - TIME=${TIME}
+      - SETTINGS=${SETTINGS}
+      - CACHE=${CACHE}
+      - IMPORT_DONE=${IMPORT_DONE}
+      - IMPORT_QUEUE=${IMPORT_QUEUE}
+      - SRID=${SRID}
+      - OPTIMIZE=${OPTIMIZE}
+      - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
+      - DBSCHEMA_IMPORT=${DBSCHEMA_IMPORT}
+      - DBSCHEMA_BACKUP=${DBSCHEMA_BACKUP}
+      - QGIS_STYLE=${QGIS_STYLE}
+      - CLIP=${CLIP}
+    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
+
+  osmupdate:
+    build: docker-osmupdate
+    image: kartoza/docker-osm:osmupdate-latest
+    container_name: dockerosm_osmupdate
+    volumes_from:
+      - imposm
+    depends_on:
+      - db
+    environment:
+      - MAX_DAYS=${MAX_DAYS}
+      - DIFF=${DIFF}
+      - MAX_MERGE=${MAX_MERGE}
+      - COMPRESSION_LEVEL=${COMPRESSION_LEVEL}
+      - BASE_URL=${BASE_URL}
+      - IMPORT_QUEUE=${IMPORT_QUEUE}
+      - IMPORT_DONE=${IMPORT_DONE}
+      - TIME=${TIME}
+    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/download.py"
+
+  pgadmin4:
+    image: dpage/pgadmin4:4.16
+    hostname: pgadmin4
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - ${PGDB_PORT}:80
+    restart: on-failure
+    depends_on:
+      - db
+
+  osmenrich:
+    build: docker-osmenrich
+    volumes_from:
+      - imposm
+    depends_on:
+      - db
+    environment:
+      - IMPORT_QUEUE=${IMPORT_QUEUE}
+      - IMPORT_DONE=${IMPORT_DONE}
+      - TIME=${TIME}
+
   martin:
     image: urbica/martin
-    hostname: dockerosm_martin
-    container_name: dockerosm_martin
     restart: on-failure
     ports:
-      - 3000:3000
+      - ${MARTIN_PORT}:3000
     environment:
-      - WATCH_MODE=true
-      - DATABASE_URL=postgres://docker:docker@db/gis
+      - WATCH_MODE=${WATCH_MODE}
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       db:
         condition: service_healthy

@@ -20,16 +20,17 @@
 """
 
 import gzip
-import xmltodict
-import yaml
-from xmltodict import OrderedDict
-from dateutil import parser
 from os import environ, listdir, mkdir
 from os.path import join, exists, getsize
 from sys import exit, stderr
-from urllib import request
-from psycopg2 import connect, OperationalError, ProgrammingError
 from time import sleep
+from urllib import request
+
+import xmltodict
+import yaml
+from dateutil import parser
+from psycopg2 import connect, OperationalError, ProgrammingError
+from xmltodict import OrderedDict
 
 
 class Enrich(object):
@@ -220,18 +221,22 @@ class Enrich(object):
             for table, table_data in self.mapping_database_schema.items():
                 new_columns_postgis = []
                 for enrich_key, enrich_type in self.enriched_column.items():
-                    try:
-                        cursor.execute('select %s from %s' % (enrich_key, table))
-                    except ProgrammingError as e:
-                        connection.rollback()
+                    check_column = ''' SELECT EXISTS (SELECT 1 FROM information_schema.columns 
+                                                                WHERE table_name='%s' and column_name='%s'); ''' % (
+                        table, enrich_key)
+                    cursor.execute(check_column)
+                    column_existence = cursor.fetchone()[0]
+
+                    if column_existence != 1:
                         if enrich_type == 'int':
-                            new_columns_postgis.append('ADD COLUMN %s INTEGER' % enrich_key)
+                            new_columns_postgis.append('ADD COLUMN IF NOT EXISTS %s NUMERIC' % enrich_key)
                         elif enrich_type == 'string':
-                            new_columns_postgis.append('ADD COLUMN %s VARCHAR' % enrich_key)
+                            new_columns_postgis.append('ADD COLUMN IF NOT EXISTS %s CHARACTER VARYING (255)' % enrich_key)
                         elif enrich_type == 'datetime':
-                            new_columns_postgis.append('ADD COLUMN %s timestamp' % enrich_key)
+                            new_columns_postgis.append('ADD COLUMN IF NOT EXISTS %s TIMESTAMPTZ' % enrich_key)
+
                 if len(new_columns_postgis) > 0:
-                    query = 'ALTER TABLE %s %s' % (table, ','.join(new_columns_postgis))
+                    query = 'ALTER TABLE public."%s" %s;' % (table, ','.join(new_columns_postgis))
                     cursor.execute(query)
                     connection.commit()
             connection.close()
@@ -415,8 +420,8 @@ class Enrich(object):
         row_batch = {}
         osm_ids = []
         try:
-            cursor.execute(
-                'select * from %s WHERE changeset_timestamp IS NULL AND osm_id IS NOT NULL ORDER BY osm_id' % table_name)
+            check_sql = ''' select * from "%s" WHERE "changeset_timestamp" IS NULL AND "osm_id" IS NOT NULL ORDER BY "osm_id" ''' % table_name
+            cursor.execute(check_sql)
             row = True
             while row:
                 # do something with row
@@ -479,8 +484,9 @@ class Enrich(object):
                 connection = self.create_connection()
                 cursor = connection.cursor()
                 try:
-                    cursor.execute('select * from %s WHERE %s=%s' % (
-                        table, table_data['osm_id_columnn'], osm_id))
+                    validate_sql = ''' select * from "%s" WHERE "%s"=%s  ''' % (
+                        table, table_data['osm_id_columnn'], osm_id)
+                    cursor.execute(validate_sql)
                     row = cursor.fetchone()
                     if row:
                         row = dict(zip(table_data['columns'], row))
@@ -550,15 +556,26 @@ class Enrich(object):
                 except IOError:
                     self.info('cache file can\'t be created')
 
+    def locate_table(self, name):
+        """Check for tables in the DB table exists in the DB"""
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables where table_name like  'TEMP_TABLE'); """
+        cursor.execute(sql.replace('TEMP_TABLE', '%s' % name))
+        # noinspection PyUnboundLocalVariable
+        return cursor.fetchone()[0]
+
     def run(self):
         """First checker."""
         while True:
             self.info('Run enrich process')
-            if self.check_database():
-                self.enrich_empty_changeset()
-                self.enrich_database_from_diff_file()
+            osm_tables = self.locate_table('osm_%')
+            if osm_tables != 1:
+                self.info('Imposm is still running, wait a while and try again')
             else:
-                self.info('Database is not ready')
+                if self.check_database():
+                    self.enrich_empty_changeset()
+                    self.enrich_database_from_diff_file()
 
             # sleep looping
             self.info('sleeping for %s' % self.default['TIME'])
