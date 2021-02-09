@@ -18,7 +18,7 @@ As a quick example, we are going to setup Docker-OSM with default values everywh
 Alternatively you can execute the `settings_downloader.sh` script to download the pbf and the clip file
 ``
 ./settings_downloader.sh GEOJSON_URL CONTINENT COUNTRY ie
-./settings_downloader.sh https://github.com/kartoza/docker-osm/blob/develop/settings/clip.geojson africa south-africa
+./settings_downloader.sh https://github.com/kartoza/docker-osm/raw/develop/settings/clip.geojson africa south-africa
 `` 
 
 If you use rancher for container management you can use the provided docker-compose.yml which allows you to automatically
