@@ -2,7 +2,7 @@
 
 A docker compose project to setup an OSM PostGIS database with automatic
 updates from OSM periodically.
-The only files you need is a PBF file, geojson (if you intent to restrict data download to
+The only files you need is a PBF file, geojson (if you intend to restrict data download to
 a smaller extent than the one specified by the PBF) and run the docker compose project.
 
 ## General architecture
@@ -20,6 +20,9 @@ Alternatively you can execute the `settings_downloader.sh` script to download th
 ./settings_downloader.sh GEOJSON_URL CONTINENT COUNTRY ie
 ./settings_downloader.sh https://github.com/kartoza/docker-osm/raw/develop/settings/clip.geojson africa south-africa
 ```
+For a full list of allowed file names read json file `countries.json`
+
+Alternatively you can use the python script `pbf_downloader.py`
 
 * If you want to connect from your local QGIS Desktop:
   * In the file `docker-compose.yml`, uncomment the block:
@@ -71,9 +74,7 @@ website: https://imposm.org/docs/imposm3/latest/mapping.html
 The default file in Docker-OSM is coming from
 https://raw.githubusercontent.com/omniscale/imposm3/master/example-mapping.yml
 
-**Note** that you can't import OSM metadata such as author, timestamp or version.
-This is a limitation from ImpOSM, check the feature request on the [Imposm repository](https://github.com/omniscale/imposm3/issues/58).
-Imposm is designed for spatial analysis, not for OSM contribution analysis.
+**Note** Imposm is designed for spatial analysis, not for OSM contribution analysis.
 If you need such a feature, you need to use another database schema supporting OSM Metadata. 
 You can check the [OSM Wiki](https://wiki.openstreetmap.org/wiki/Databases_and_data_access_APIs#Database_Schemas) for "Lossless" schemas.
 
@@ -93,14 +94,14 @@ you to define a smaller area that you can work with.
 This is always desirable to limit the features being imported into the database rather 
 than clipping them.
 
-**NB:** Ensure you add a geojson covering the area you intent to clip into the settings folder.
-The geojson can be the same extent of the administrative area of your country or it can be a 
+**NB:** Ensure you add a geojson covering the area you intend to clip into the `settings` folder.
+The geojson can be the same extent of the administrative area for your country, or it can be a 
 smaller extent. The CRS of the geojson should always be EPSG:4326.
 
 
 **NB:** It is encouraged to simplify the geometry for the `clip.geojson` as
 a simplified geometry is easier to process during the import. 
-Rather use the minimum bounding box for the area you intent to clip your dataset with.
+Rather use the minimum bounding box for the area you intend to clip your dataset with.
 
 ### QGIS Styles
 
@@ -116,8 +117,7 @@ make backup_styles
 
 ### SQL Trigger, functions, views...
 
-You can add PostGIS functions, triggers, materialized views in a 
-SQL file called `post-pbf-import.sql`. 
+You can add PostGIS functions, triggers, materialized views into an SQL file called `post-pbf-import.sql`. 
 It will be imported automatically in the database.
 
 ### Build and run
@@ -129,7 +129,7 @@ docker-compose build
 docker-compose up 
 ```
 
-In production you should daemonize the services when bringing them up:
+In production, you should daemonize the services when bringing them up:
 
 ```bash
 docker-compose up -d
@@ -245,26 +245,12 @@ in this repository.
 
 # PostGIS
 
-With -e, you can add some settings to PostGIS:
-```bash
- - ALLOW_IP_RANGE= 0.0.0.0/0
-```
-More environment variables for Kartoza/postgis image can be found from https://github.com/kartoza/docker-postgis#environment-variables
+For environment variables associated with `docker-postgis` refer to [docker postgis repository](https://github.com/kartoza/docker-postgis)
 
-# QGIS Server and Martin Vector tiles
+### Support
 
-You can run a QGIS Server front end or martin vector tiles to the OSM mirror by using the provided
-docker-compose-web.yml file. For example:
-
-```bash
-docker-compose -f docker-compose.yml -f docker-compose-web.yml qgisserver  up
-```
-
-or
-```bash
-docker-compose -f docker-compose.yml -f docker-compose-web.yml martin  up
-```
-For more information about martin configuration and usage can be found from https://github.com/urbica/martin
+If you require more substantial assistance from [kartoza](https://kartoza.com)  (because our work and interaction on docker-osm is pro bono),
+please consider taking out a [Support Level Agreeement](https://kartoza.com/en/shop/product/support) 
 
 
 # Credits
