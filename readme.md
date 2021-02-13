@@ -21,11 +21,6 @@ Alternatively you can execute the `settings_downloader.sh` script to download th
 ./settings_downloader.sh https://github.com/kartoza/docker-osm/raw/develop/settings/clip.geojson africa south-africa
 ```
 
-If you use rancher for container management you can use the provided docker-compose.yml which allows you to automatically
-download the settings onto the host machine by using environment variables.
-* Run the docker-compose-rancher file and make sure the environment variables are setup properly for
-osm_downloader to download the correct pbf file
-
 * If you want to connect from your local QGIS Desktop:
   * In the file `docker-compose.yml`, uncomment the block:
 
