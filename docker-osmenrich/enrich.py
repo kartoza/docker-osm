@@ -231,7 +231,8 @@ class Enrich(object):
                         if enrich_type == 'int':
                             new_columns_postgis.append('ADD COLUMN IF NOT EXISTS %s NUMERIC' % enrich_key)
                         elif enrich_type == 'string':
-                            new_columns_postgis.append('ADD COLUMN IF NOT EXISTS %s CHARACTER VARYING (255)' % enrich_key)
+                            new_columns_postgis.append(
+                                'ADD COLUMN IF NOT EXISTS %s CHARACTER VARYING (255)' % enrich_key)
                         elif enrich_type == 'datetime':
                             new_columns_postgis.append('ADD COLUMN IF NOT EXISTS %s TIMESTAMPTZ' % enrich_key)
 
@@ -420,7 +421,8 @@ class Enrich(object):
         row_batch = {}
         osm_ids = []
         try:
-            check_sql = ''' select * from "%s" WHERE "changeset_timestamp" IS NULL AND "osm_id" IS NOT NULL ORDER BY "osm_id" ''' % table_name
+            check_sql = ''' select * from "%s" WHERE "changeset_timestamp" 
+            IS NULL AND "osm_id" IS NOT NULL ORDER BY "osm_id" ''' % table_name
             cursor.execute(check_sql)
             row = True
             while row:
@@ -556,12 +558,13 @@ class Enrich(object):
                 except IOError:
                     self.info('cache file can\'t be created')
 
-    def locate_table(self, name):
+    def locate_table(self, name, schema):
         """Check for tables in the DB table exists in the DB"""
         connection = self.create_connection()
         cursor = connection.cursor()
-        sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables where table_name like  'TEMP_TABLE'); """
-        cursor.execute(sql.replace('TEMP_TABLE', '%s' % name))
+        sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables 
+              where table_name like  TEMP_TABLE and table_schema = 'TEMP_SCHEMA'); """
+        self.cursor.execute(sql.replace('TEMP_TABLE', '%s' % name).replace('TEMP_SCHEMA', '%s' % schema))
         # noinspection PyUnboundLocalVariable
         return cursor.fetchone()[0]
 
@@ -569,7 +572,8 @@ class Enrich(object):
         """First checker."""
         while True:
             self.info('Run enrich process')
-            osm_tables = self.locate_table('osm_%')
+
+            osm_tables = self.locate_table("'osm_%'", self.default['DBSCHEMA_PRODUCTION'])
             if osm_tables != 1:
                 self.info('Imposm is still running, wait a while and try again')
             else:

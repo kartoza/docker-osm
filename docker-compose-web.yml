@@ -102,6 +102,7 @@ services:
       - IMPORT_QUEUE=${IMPORT_QUEUE}
       - IMPORT_DONE=${IMPORT_DONE}
       - TIME=${TIME}
+      - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
 
   martin:
     image: urbica/martin
