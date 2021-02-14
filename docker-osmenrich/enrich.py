@@ -63,6 +63,7 @@ class Enrich(object):
             'IMPORT_DONE': 'import_done',
             'CACHE': 'cache',
             'MAX_DIFF_FILE_SIZE': 100000000,
+            'DBSCHEMA_PRODUCTION': 'public',
             'CACHE_MODIFY_CHECK': ''
         }
         self.mapping_file = None
@@ -237,7 +238,8 @@ class Enrich(object):
                             new_columns_postgis.append('ADD COLUMN IF NOT EXISTS %s TIMESTAMPTZ' % enrich_key)
 
                 if len(new_columns_postgis) > 0:
-                    query = 'ALTER TABLE public."%s" %s;' % (table, ','.join(new_columns_postgis))
+                    query = 'ALTER TABLE %s."%s" %s;' % (
+                        self.default['DBSCHEMA_PRODUCTION'], table, ','.join(new_columns_postgis))
                     cursor.execute(query)
                     connection.commit()
             connection.close()
@@ -333,8 +335,8 @@ class Enrich(object):
         connection = self.create_connection()
         cursor = connection.cursor()
         try:
-            query = 'UPDATE %s SET %s WHERE %s=%s' % (
-                table_name, ','.join(sets), osm_id_column, osm_id)
+            query = 'UPDATE %s.%s SET %s WHERE %s=%s' % (self.default['DBSCHEMA_PRODUCTION'],
+                                                         table_name, ','.join(sets), osm_id_column, osm_id)
             cursor.execute(query)
             connection.commit()
         except ProgrammingError as e:
@@ -421,8 +423,8 @@ class Enrich(object):
         row_batch = {}
         osm_ids = []
         try:
-            check_sql = ''' select * from "%s" WHERE "changeset_timestamp" 
-            IS NULL AND "osm_id" IS NOT NULL ORDER BY "osm_id" ''' % table_name
+            check_sql = ''' select * from %s."%s" WHERE "changeset_timestamp" 
+            IS NULL AND "osm_id" IS NOT NULL ORDER BY "osm_id" ''' % (self.default['DBSCHEMA_PRODUCTION'], table_name)
             cursor.execute(check_sql)
             row = True
             while row:
@@ -486,8 +488,9 @@ class Enrich(object):
                 connection = self.create_connection()
                 cursor = connection.cursor()
                 try:
-                    validate_sql = ''' select * from "%s" WHERE "%s"=%s  ''' % (
-                        table, table_data['osm_id_columnn'], osm_id)
+                    validate_sql = ''' select * from %s."%s" WHERE "%s"=%s  ''' % (self.default['DBSCHEMA_PRODUCTION'],
+                                                                                   table, table_data['osm_id_columnn'],
+                                                                                   osm_id)
                     cursor.execute(validate_sql)
                     row = cursor.fetchone()
                     if row:
