@@ -19,8 +19,9 @@
  ***************************************************************************/
 """
 
-from os import environ, listdir, mknod
+from os import environ, listdir
 from os.path import join, exists, abspath, isabs
+from pathlib import Path
 from shutil import move
 from subprocess import call
 from sys import exit, stderr
@@ -242,7 +243,7 @@ class Importer(object):
     def lockfile(self):
         setup_lockfile = join(self.default['SETTINGS'], 'importer.lock')
         if not exists(setup_lockfile):
-            mknod(setup_lockfile)
+            Path(setup_lockfile).touch()
 
     def run(self):
         """First checker."""
