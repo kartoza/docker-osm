@@ -567,7 +567,7 @@ class Enrich(object):
         cursor = connection.cursor()
         sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables 
               where table_name like  TEMP_TABLE and table_schema = 'TEMP_SCHEMA'); """
-        self.cursor.execute(sql.replace('TEMP_TABLE', '%s' % name).replace('TEMP_SCHEMA', '%s' % schema))
+        cursor.execute(sql.replace('TEMP_TABLE', '%s' % name).replace('TEMP_SCHEMA', '%s' % schema))
         # noinspection PyUnboundLocalVariable
         return cursor.fetchone()[0]
 
