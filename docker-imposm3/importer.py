@@ -19,14 +19,15 @@
  ***************************************************************************/
 """
 
-from sys import exit, stderr
 from os import environ, listdir
+from os.path import join, exists, abspath, isabs
 from pathlib import Path
 from shutil import move
-from os.path import join, exists, abspath, isabs
-from psycopg2 import connect, OperationalError
 from subprocess import call
+from sys import exit, stderr
 from time import sleep
+
+from psycopg2 import connect, OperationalError
 
 
 class Importer(object):
@@ -231,10 +232,11 @@ class Importer(object):
         command += ['-f', self.qgis_style]
         call(command)
 
-    def locate_table(self, name):
+    def locate_table(self, name, schema):
         """Check for tables in the DB table exists in the DB"""
-        sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables where table_name like  'TEMP_TABLE'); """
-        self.cursor.execute(sql.replace('TEMP_TABLE', '%s' % name))
+        sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables 
+                 where table_name like  TEMP_TABLE and table_schema = 'TEMP_SCHEMA'); """
+        self.cursor.execute(sql.replace('TEMP_TABLE', '%s' % name).replace('TEMP_SCHEMA', '%s' % schema))
         # noinspection PyUnboundLocalVariable
         return self.cursor.fetchone()[0]
 
@@ -245,9 +247,11 @@ class Importer(object):
 
     def run(self):
         """First checker."""
-        osm_tables = self.locate_table('osm_%')
+
+        osm_tables = self.locate_table("'osm_%'", self.default['DBSCHEMA_PRODUCTION'])
 
         if osm_tables != 1:
+
             # It means that the DB is empty. Let's import the PBF file.
 
             if self.clip_json_file:

@@ -19,11 +19,11 @@
  ***************************************************************************/
 """
 
-from os.path import exists, join, isabs, abspath
-from os import listdir, environ
-from sys import exit, stderr
-from subprocess import call, Popen, PIPE
 from datetime import datetime
+from os import listdir, environ
+from os.path import exists, join, isabs, abspath
+from subprocess import call, Popen, PIPE
+from sys import exit, stderr
 from time import sleep
 
 
@@ -82,12 +82,8 @@ class Downloader(object):
 
             if f.endswith('.pbf'):
                 self.osm_file = join(self.default['SETTINGS'], f)
-
-        if not self.osm_file:
-            msg = 'OSM file *.osm.pbf is missing in %s' % self.default['SETTINGS']
-            self.error(msg)
-        else:
-            self.info('OSM PBF file: ' + self.osm_file)
+        while not exists(self.osm_file):
+            sleep(float(self.default['TIME']))
 
         self.info('The checkup is OK.')
 
