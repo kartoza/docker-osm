@@ -216,8 +216,11 @@ class Enrich(object):
 
     def check_database(self):
         """Test connection to PostGIS and create the URI."""
-        connection = self.create_connection()
-        cursor = connection.cursor()
+        try:
+            connection = self.create_connection()
+            cursor = connection.cursor()
+        except OperationalError as e:
+            print(e)
         try:
             for table, table_data in self.mapping_database_schema.items():
                 new_columns_postgis = []
