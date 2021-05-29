@@ -19,6 +19,7 @@
  ***************************************************************************/
 """
 
+import sys
 import gzip
 from os import environ, listdir, mkdir
 from os.path import join, exists, getsize
@@ -64,7 +65,11 @@ class Enrich(object):
             'CACHE': 'cache',
             'MAX_DIFF_FILE_SIZE': 100000000,
             'DBSCHEMA_PRODUCTION': 'public',
-            'CACHE_MODIFY_CHECK': ''
+            'CACHE_MODIFY_CHECK': '',
+            'SSL_MODE': 'disable',
+            'SSL_CERT': None,
+            'SSL_ROOT_CERT': None,
+            'SSL_KEY': None
         }
         self.mapping_file = None
         self.mapping_database_schema = {}
@@ -207,12 +212,33 @@ class Enrich(object):
             )
 
     def create_connection(self):
-        return connect(
-            "dbname='%s' user='%s' host='%s' password='%s'" % (
+        if self.default['SSL_MODE'] == 'verify-ca' or self.default['SSL_MODE'] == 'verify-full':
+            if self.default['SSL_CERT'] is None and self.default['SSL_KEY'] is None and self.default['SSL_ROOT_CERT'] \
+                    is None:
+                sys.exit()
+            else:
+
+                conn_parameters = "dbname='%s' user='%s' host='%s' port='%s' password='%s'" \
+                                  " sslmode='%s' sslcert='%s' sslkey='%s' sslrootcert='%s' " % (
+                                      self.default['POSTGRES_DBNAME'],
+                                      self.default['POSTGRES_USER'],
+                                      self.default['POSTGRES_HOST'],
+                                      self.default['POSTGRES_PORT'],
+                                      self.default['POSTGRES_PASS'],
+                                      self.default['SSL_MODE'],
+                                      self.default['SSL_CERT'],
+                                      self.default['SSL_KEY'],
+                                      self.default['SSL_ROOT_CERT'])
+        else:
+            conn_parameters = "dbname='%s' user='%s' host='%s' port='%s' password='%s' sslmode='%s'  " % (
                 self.default['POSTGRES_DBNAME'],
                 self.default['POSTGRES_USER'],
                 self.default['POSTGRES_HOST'],
-                self.default['POSTGRES_PASS']))
+                self.default['POSTGRES_PORT'],
+                self.default['POSTGRES_PASS'],
+                self.default['SSL_MODE'])
+
+        return connect(conn_parameters)
 
     def check_database(self):
         """Test connection to PostGIS and create the URI."""

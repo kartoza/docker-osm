@@ -17,6 +17,7 @@ services:
       - POSTGRES_PASS=${POSTGRES_PASS}
       - POSTGRES_DBNAME=${POSTGRES_DBNAME}
       - ALLOW_IP_RANGE=${ALLOW_IP_RANGE}
+      - FORCE_SSL=${FORCE_SSL}
     volumes:
       - osm-postgis-data:/var/lib/postgresql
     ports:
@@ -55,6 +56,7 @@ services:
       - DBSCHEMA_BACKUP=${DBSCHEMA_BACKUP}
       - QGIS_STYLE=${QGIS_STYLE}
       - CLIP=${CLIP}
+      - SSL_MODE=${SSL_MODE}
     command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
 
   osmupdate:
@@ -104,3 +106,4 @@ services:
       - IMPORT_DONE=${IMPORT_DONE}
       - TIME=${TIME}
       - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
+      - SSL_MODE=${SSL_MODE}
