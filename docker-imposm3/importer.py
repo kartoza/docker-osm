@@ -18,10 +18,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-
+import sys
 from os import environ, listdir
 from os.path import join, exists, abspath, isabs
-from pathlib import Path
 from shutil import move
 from subprocess import call
 from sys import exit, stderr
@@ -51,7 +50,11 @@ class Importer(object):
             'DBSCHEMA_IMPORT': 'import',
             'DBSCHEMA_BACKUP': 'backup',
             'CLIP': 'no',
-            'QGIS_STYLE': 'yes'
+            'QGIS_STYLE': 'yes',
+            'SSL_MODE': 'disable',
+            'SSL_CERT': None,
+            'SSL_ROOT_CERT': None,
+            'SSL_KEY': None
         }
         self.osm_file = None
         self.mapping_file = None
@@ -191,24 +194,70 @@ class Importer(object):
 
     def check_postgis(self):
         """Test connection to PostGIS and create the URI."""
+        if self.default['SSL_MODE'] == 'verify-ca' or self.default['SSL_MODE'] == 'verify-full':
+            if self.default['SSL_CERT'] is None and self.default['SSL_KEY'] is None and self.default['SSL_ROOT_CERT'] \
+                    is None:
+                sys.exit()
+            else:
+
+                conn_parameters = "dbname='%s' user='%s' host='%s' port='%s' password='%s'" \
+                                  " sslmode='%s' sslcert='%s' sslkey='%s' sslrootcert='%s' " % (
+                                      self.default['POSTGRES_DBNAME'],
+                                      self.default['POSTGRES_USER'],
+                                      self.default['POSTGRES_HOST'],
+                                      self.default['POSTGRES_PORT'],
+                                      self.default['POSTGRES_PASS'],
+                                      self.default['SSL_MODE'],
+                                      self.default['SSL_CERT'],
+                                      self.default['SSL_KEY'],
+                                      self.default['SSL_ROOT_CERT'])
+        else:
+            conn_parameters = "dbname='%s' user='%s' host='%s' port='%s' password='%s' sslmode='%s'  " % (
+                self.default['POSTGRES_DBNAME'],
+                self.default['POSTGRES_USER'],
+                self.default['POSTGRES_HOST'],
+                self.default['POSTGRES_PORT'],
+                self.default['POSTGRES_PASS'],
+                self.default['SSL_MODE'])
+
         try:
-            connection = connect(
-                "dbname='%s' user='%s' host='%s' port='%s' password='%s'" % (
-                    self.default['POSTGRES_DBNAME'],
-                    self.default['POSTGRES_USER'],
-                    self.default['POSTGRES_HOST'],
-                    self.default['POSTGRES_PORT'],
-                    self.default['POSTGRES_PASS']))
+            connection = connect(conn_parameters)
             self.cursor = connection.cursor()
         except OperationalError as e:
             self.error(e)
 
-        self.postgis_uri = 'postgis://%s:%s@%s:%s/%s' % (
-            self.default['POSTGRES_USER'],
-            self.default['POSTGRES_PASS'],
-            self.default['POSTGRES_HOST'],
-            self.default['POSTGRES_PORT'],
-            self.default['POSTGRES_DBNAME'])
+        if self.default['SSL_MODE'] == 'verify-ca' or self.default['SSL_MODE'] == 'verify-full':
+            if self.default['SSL_CERT'] is None and self.default['SSL_KEY'] is None and self.default['SSL_ROOT_CERT'] \
+                    is None:
+                sys.exit()
+            else:
+                self.postgis_uri = \
+                    'postgis://%s:%s@%s:%s/%s?sslmode=%s&sslcert=%s&sslkey=%s&sslrootcert=%s' % (
+                        self.default['POSTGRES_USER'],
+                        self.default['POSTGRES_PASS'],
+                        self.default['POSTGRES_HOST'],
+                        self.default['POSTGRES_PORT'],
+                        self.default['POSTGRES_DBNAME'],
+                        self.default['SSL_MODE'],
+                        self.default['SSL_CERT'],
+                        self.default['SSL_KEY'],
+                        self.default['SSL_ROOT_CERT'])
+        elif self.default['SSL_MODE'] == 'require' or self.default['SSL_MODE'] == 'prefer':
+            self.postgis_uri = 'postgis://%s:%s@%s:%s/%s?sslmode=%s' \
+                               % (
+                                   self.default['POSTGRES_USER'],
+                                   self.default['POSTGRES_PASS'],
+                                   self.default['POSTGRES_HOST'],
+                                   self.default['POSTGRES_PORT'],
+                                   self.default['POSTGRES_DBNAME'],
+                                   self.default['SSL_MODE'])
+        else:
+            self.postgis_uri = 'postgis://%s:%s@%s:%s/%s' % (
+                self.default['POSTGRES_USER'],
+                self.default['POSTGRES_PASS'],
+                self.default['POSTGRES_HOST'],
+                self.default['POSTGRES_PORT'],
+                self.default['POSTGRES_DBNAME'])
 
     def import_custom_sql(self):
         """Import the custom SQL file into the database."""
@@ -239,11 +288,6 @@ class Importer(object):
         self.cursor.execute(sql.replace('TEMP_TABLE', '%s' % name).replace('TEMP_SCHEMA', '%s' % schema))
         # noinspection PyUnboundLocalVariable
         return self.cursor.fetchone()[0]
-
-    def lockfile(self):
-        setup_lockfile = join(self.default['SETTINGS'], 'importer.lock')
-        if not exists(setup_lockfile):
-            Path(setup_lockfile).touch()
 
     def run(self):
         """First checker."""
@@ -292,7 +336,6 @@ class Importer(object):
             self.error(msg)
         else:
             self.info('Import PBF successful : %s' % self.osm_file)
-            self.lockfile()
 
         if self.post_import_file or self.qgis_style:
             # Set the password for psql
