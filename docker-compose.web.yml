@@ -1,0 +1,30 @@
+version: '3.4'
+services:
+  martin:
+    image: urbica/martin
+    restart: on-failure
+    ports:
+      - ${MARTIN_PORT}:3000
+    environment:
+      - WATCH_MODE=${WATCH_MODE}
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  qgisserver:
+    image: openquake/qgis-server:ltr
+    environment:
+      - QGIS_PROJECT_FILE=/project/project.qgs
+      - QGIS_SERVER_LOG_LEVEL=DEBUG
+      - QGIS_SERVER_PARALLEL_RENDERING=1
+    volumes:
+      - ./logs:/var/log/apache2
+      - ./web:/project
+      - ./settings:/web/settings
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 8198:80
+    restart: on-failure

@@ -17,12 +17,55 @@ As a quick example, we are going to setup Docker-OSM with default values everywh
 
 Alternatively you can execute the `settings_downloader.sh` script to download the pbf and the clip file
 ```bash
-./settings_downloader.sh GEOJSON_URL CONTINENT COUNTRY ie
-./settings_downloader.sh https://github.com/kartoza/docker-osm/raw/develop/settings/clip.geojson africa south-africa
+bash ./settings_downloader.sh GEOJSON_URL CONTINENT COUNTRY ie
+bash ./settings_downloader.sh https://github.com/kartoza/docker-osm/raw/develop/settings/clip.geojson africa south-africa
 ```
 For a full list of allowed file names read json file `countries.json`
 
 Alternatively you can use the python script `pbf_downloader.py`
+
+For local usage, the containers are set up using docker-compose configuration. The configuration files consists of 
+two sets of config file. The first one is `.env` which contains lists of environment variables.
+Copy the `.env` file from the `.example.env` in this repo.
+
+```bash
+cp .example.env .env
+```
+
+For subsequent configuration, edit the `.env` files to tweak your options.
+
+The second set of configuration is using a `docker-compose.yml` files, which is a compose files docker-compose is using.
+
+For minimum set of production environment, the configuration file is described in `docker-compose.yml` file.
+The other YAML files with prefix `docker-compose` is a configuration file that you can merge with the basic `docker-compose.yml` file. To use more than one configuration file, you edit `.env` file and change the `COMPOSE_FILE` variable to include all 
+the compose file you desired, separated by a colon `:` for each file.
+
+For example, by default, the example file is using both `docker-compose.yml` and `docker-compose.develop.yml` because
+we expect you to provide the necessary settings in `settings` folder. Thus the `COMPOSE_FILE` variable looks like this:
+
+```
+COMPOSE_FILE=docker-compose.yml:docker-compose.develop.yml
+```
+
+In production environment, normally all the persistent data is stored in a volume, instead of bind mounted.
+In this case only the `docker-compose.yml` is enough, and you need to provide the settings inside the volume itself.
+
+To build the image yourself, include the `docker-compose.build.yml` file.
+
+To use helper services such as pgadmin, include `docker-compose.pgadmin.yml`, and `docker-compose.web.yml` for web demo.
+
+If you are familiar with how docker-compose work, you can also use a standard convention by putting `docker-compose.override.yml`
+file and include it in the `COMPOSE_FILE` variable.
+
+To store the configuration for long-term use (for archiving or diffing of different configuration). You can interpolate the 
+current variables in `.env` and generate a full config files:
+
+```bash
+docker-compose config > docker-compose.production.yml
+```
+
+The above command will include and merged all your config files specified in `COMPOSE_FILE` variable and also fill out the 
+variables parameterized in the docker-compose file.
 
 * If you want to connect from your local QGIS Desktop:
   * In the file `docker-compose.yml`, uncomment the block:

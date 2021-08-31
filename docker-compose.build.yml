@@ -1,0 +1,10 @@
+version: '3.4'
+services:
+  imposm:
+    build: docker-imposm3
+
+  osmupdate:
+    build: docker-osmupdate
+
+  osmenrich:
+    build: docker-osmenrich

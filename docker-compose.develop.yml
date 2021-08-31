@@ -1,0 +1,19 @@
+version: '3.4'
+services:
+  db:
+    volumes:
+      - ./settings:/home/settings
+    ports:
+      - ${DB_PORT}:5432
+
+  imposm:
+    volumes:
+      - ./settings:/home/settings
+  
+  osmupdate:
+    volumes:
+      - ./settings:/home/settings
+  
+  osmenrich:
+    volumes:
+      - ./settings:/home/settings

@@ -1,17 +1,15 @@
-version: '2.1'
+version: '3.4'
 
 volumes:
   osm-postgis-data:
+  settings-data:
   import_done:
   import_queue:
   cache:
-  pgadmin_data:
 
 services:
   db:
     image: kartoza/postgis:${POSTGRES_VERSION}
-    hostname: db
-    container_name: dockerosm_db
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASS=${POSTGRES_PASS}
@@ -20,18 +18,14 @@ services:
       - FORCE_SSL=${FORCE_SSL}
     volumes:
       - osm-postgis-data:/var/lib/postgresql
-    ports:
-      - ${DB_PORT}:5432
+      - settings-data:/home/settings
     healthcheck:
-      test: "exit 0"
-
+      test: "pg_isready -d ${POSTGRES_DBNAME}"
 
   imposm:
     image: kartoza/docker-osm:imposm-latest
-    build: docker-imposm3
-    container_name: dockerosm_imposm
     volumes:
-      - ./settings:/home/settings
+      - settings-data:/home/settings
       - import_done:/home/import_done
       - import_queue:/home/import_queue
       - cache:/home/cache
@@ -57,14 +51,14 @@ services:
       - QGIS_STYLE=${QGIS_STYLE}
       - CLIP=${CLIP}
       - SSL_MODE=${SSL_MODE}
-    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
 
   osmupdate:
-    build: docker-osmupdate
     image: kartoza/docker-osm:osmupdate-latest
-    container_name: dockerosm_osmupdate
-    volumes_from:
-      - imposm
+    volumes:
+      - settings-data:/home/settings
+      - import_done:/home/import_done
+      - import_queue:/home/import_queue
+      - cache:/home/cache
     depends_on:
       db:
         condition: service_healthy
@@ -78,26 +72,13 @@ services:
       - IMPORT_DONE=${IMPORT_DONE}
       - TIME=${TIME}
 
-  pgadmin4:
-    image: dpage/pgadmin4:latest
-    hostname: pgadmin4
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - ${PGDB_PORT}:80
-    restart: on-failure
-    depends_on:
-      db:
-        condition: service_healthy
-
   osmenrich:
-    build: docker-osmenrich
-    container_name: dockerosm_osmenrich
-    volumes_from:
-      - imposm
+    image: kartoza/docker-osm:osmenrich-latest
+    volumes:
+      - settings-data:/home/settings
+      - import_done:/home/import_done
+      - import_queue:/home/import_queue
+      - cache:/home/cache
     depends_on:
       db:
         condition: service_healthy
