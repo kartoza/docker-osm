@@ -44,9 +44,8 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          file: docker-${{ matrix.component }}
+          context: docker-${{ matrix.component }}
           push: true
-          target: prod
           tags: ${{ secrets.DOCKERHUB_REPO }}/docker-osm:${{ matrix.component }}-latest
           cache-from: |
             type=gha,scope=prod
