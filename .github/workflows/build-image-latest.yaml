@@ -46,7 +46,6 @@ jobs:
         with:
           context: docker-${{ matrix.component }}
           push: true
-          target: prod
           tags: ${{ secrets.DOCKERHUB_REPO }}/docker-osm:${{ matrix.component }}-latest
           cache-from: |
             type=gha,scope=prod
