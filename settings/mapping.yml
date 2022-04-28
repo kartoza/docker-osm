@@ -1,154 +1,718 @@
+# Imposm Mapping file
+# This file is a mix of original work and content from https://github.com/openmaptiles/openmaptiles/
+# Please also read https://imposm.org/docs/imposm3/latest/mapping.html to understand this file format
+
+name_field: &name
+  name: name
+  key: name
+  type: string
+name_en_field: &name_en
+  name: name_en
+  key: name:en
+  type: string
+name_de_field: &name_de
+  name: name_de
+  key: name:de
+  type: string
+short_name_field: &short_name
+  key: short_name
+  name: short_name
+  type: string
+tunnel_field: &tunnel
+  key: tunnel
+  name: is_tunnel
+  type: bool
+bridge_field: &bridge
+  key: bridge
+  name: is_bridge
+  type: bool
+ramp_field: &ramp
+  key: ramp
+  name: is_ramp
+  type: bool
+ford_field: &ford
+  key: ford
+  name: is_ford
+  type: bool
+oneway_field: &oneway
+  key: oneway
+  name: is_oneway
+  type: direction
+area_field: &area
+  name: is_area
+  key: area
+  type: bool
+service_field: &service
+  key: service
+  name: service
+  type: string
+usage_field: &usage
+  key: usage
+  name: usage
+  type: string
+public_transport_field: &public_transport
+  key: public_transport
+  name: public_transport
+  type: string
+ref_field: &ref
+  key: ref
+  name: ref
+  type: string
+network_field: &network
+  key: network
+  name: network
+  type: string
+layer_field: &layer
+  key: layer
+  name: layer
+  type: integer
+level_field: &level
+  key: level
+  name: level
+  type: integer
+indoor_field: &indoor
+  key: indoor
+  name: indoor
+  type: bool
+man_made_field: &man_made
+  key: man_made
+  name: man_made
+  type: string
+z_order_field: &z_order
+  name: z_order
+  type: wayzorder
+bicycle_field: &bicycle
+  key: bicycle
+  name: bicycle
+  type: string
+foot_field: &foot
+  key: foot
+  name: foot
+  type: string
+horse_field: &horse
+  key: horse
+  name: horse
+  type: string
+mtb_scale_field: &mtb_scale
+  key: mtb:scale
+  name: mtb_scale
+  type: string
+surface_field: &surface
+  key: surface
+  name: surface
+  type: string
+
+
+
+
+# aerialway values , see http://taginfo.openstreetmap.org/keys/aerialway#values
+def_poi_mapping_aerialway: &poi_mapping_aerialway
+  - station
+
+# amenity values , see http://taginfo.openstreetmap.org/keys/amenity#values
+def_poi_mapping_amenity: &poi_mapping_amenity
+  - arts_centre
+  - bank
+  - bar
+  - bbq
+  - bicycle_parking
+  - bicycle_rental
+  - biergarten
+  - bus_station
+  - cafe
+  - cinema
+  - community_centre
+  - courthouse
+  - drinking_water
+  - embassy
+  - fast_food
+  - ferry_terminal
+  - fire_station
+  - food_court
+  - fuel
+  - grave_yard
+  - ice_cream
+  - library
+  - marketplace
+  - motorcycle_parking
+  - nightclub
+  - nursing_home
+  - parking
+  - place_of_worship
+  - post_box
+  - post_office
+  - prison
+  - pub
+  - recycling
+  - restaurant
+  - shelter
+  - swimming_pool
+  - taxi
+  - telephone
+  - theatre
+  - toilets
+  - townhall
+  - waste_basket
+
+# barrier values , see http://taginfo.openstreetmap.org/keys/barrier#values
+def_poi_mapping_barrier: &poi_mapping_barrier
+  - bollard
+  - border_control
+  - cycle_barrier
+  - gate
+  - lift_gate
+  - sally_port
+  - stile
+  - toll_booth
+  
+# highway values , see http://taginfo.openstreetmap.org/keys/highway#values
+def_poi_mapping_highway: &poi_mapping_highway
+  - bus_stop
+
+# historic values , see http://taginfo.openstreetmap.org/keys/historic#values
+def_poi_mapping_historic: &poi_mapping_historic
+  - monument
+  - castle
+  - ruins
+
+# leisure values , see http://taginfo.openstreetmap.org/keys/leisure#values
+def_poi_mapping_leisure: &poi_mapping_leisure
+  - dog_park
+  - escape_game
+  - garden
+  - golf_course
+  - ice_rink
+  - hackerspace
+  - marina
+  - miniature_golf
+  - sports_centre
+  - swimming_area
+  - swimming_pool
+  - water_park
+
+# railway values , see http://taginfo.openstreetmap.org/keys/railway#values
+def_poi_mapping_railway: &poi_mapping_railway
+  - halt
+  - station
+  - subway_entrance
+  - train_station_entrance
+  - tram_stop
+
+# shop values , see http://taginfo.openstreetmap.org/keys/shop#values
+def_poi_mapping_shop: &poi_mapping_shop
+  - accessories
+  - alcohol
+  - antiques
+  - art
+  - bag
+  - bakery
+  - beauty
+  - bed
+  - beverages
+  - bicycle
+  - books
+  - boutique
+  - butcher
+  - camera
+  - car
+  - car_repair
+  - car_parts
+  - carpet
+  - charity
+  - chocolate
+  - clothes
+  - coffee
+  - computer
+  - confectionery
+  - convenience
+  - copyshop
+  - cosmetics
+  - deli
+  - delicatessen
+  - department_store
+  - doityourself
+  - dry_cleaning
+  - electronics
+  - erotic
+  - fabric
+  - florist
+  - frozen_food
+  - furniture
+  - garden_centre
+  - general
+  - gift
+  - greengrocer
+  - hairdresser
+  - hardware
+  - hearing_aids
+  - hifi
+  - ice_cream
+  - interior_decoration
+  - jewelry
+  - kiosk
+  - lamps
+  - laundry
+  - mall
+  - massage
+  - mobile_phone
+  - motorcycle
+  - music
+  - musical_instrument
+  - newsagent
+  - outdoor
+  - perfume
+  - perfumery
+  - pet
+  - photo
+  - second_hand
+  - shoes
+  - sports
+  - stationery
+  - supermarket
+  - tailor
+  - tattoo
+  - ticket
+  - tobacco
+  - toys
+  - travel_agency
+  - video
+  - video_games
+  - watches
+  - weapons
+  - wholesale
+  - wine
+
+def_aeroway_polygon_mapping: &aeroway_polygon_mapping
+  - aerodrome
+  - heliport
+  - runway
+  - helipad
+  - taxiway
+  - apron
+  - terminal
+  - hangar
+
+# sport values , see http://taginfo.openstreetmap.org/keys/sport#values
+def_poi_mapping_sport: &poi_mapping_sport
+  - american_football
+  - archery
+  - athletics
+  - australian_football
+  - badminton
+  - baseball
+  - basketball
+  - beachvolleyball
+  - billiards
+  - bmx
+  - boules
+  - bowls
+  - boxing
+  - canadian_football
+  - canoe
+  - chess
+  - climbing
+  - climbing_adventure
+  - cricket
+  - cricket_nets
+  - croquet
+  - curling
+  - cycling
+  - disc_golf
+  - diving
+  - dog_racing
+  - equestrian
+  - fatsal
+  - field_hockey
+  - free_flying
+  - gaelic_games
+  - golf
+  - gymnastics
+  - handball
+  - hockey
+  - horse_racing
+  - horseshoes
+  - ice_hockey
+  - ice_stock
+  - judo
+  - karting
+  - korfball
+  - long_jump
+  - model_aerodrome
+  - motocross
+  - motor
+  - multi
+  - netball
+  - orienteering
+  - paddle_tennis
+  - paintball
+  - paragliding
+  - pelota
+  - racquet
+  - rc_car
+  - rowing
+  - rugby
+  - rugby_league
+  - rugby_union
+  - running
+  - sailing
+  - scuba_diving
+  - shooting
+  - shooting_range
+  - skateboard
+  - skating
+  - skiing
+  - soccer
+  - surfing
+  - swimming
+  - table_soccer
+  - table_tennis
+  - team_handball
+  - tennis
+  - toboggan
+  - volleyball
+  - water_ski
+  - yoga
+
+# tourism values , see http://taginfo.openstreetmap.org/keys/tourism#values
+def_poi_mapping_tourism: &poi_mapping_tourism
+  - alpine_hut
+  - aquarium
+  - artwork
+  - attraction
+  - bed_and_breakfast
+  - camp_site
+  - caravan_site
+  - chalet
+  - gallery
+  - guest_house
+  - hostel
+  - hotel
+  - information
+  - motel
+  - museum
+  - picnic_site
+  - viewpoint
+
+# waterway values , see http://taginfo.openstreetmap.org/keys/waterway#values
+def_poi_mapping_waterway: &poi_mapping_waterway
+  - dock
+
+def_poi_fields: &poi_fields
+  - name: osm_id
+    type: id
+  - name: geometry
+    type: geometry
+  - name: name
+    key: name
+    type: string
+  - name: name_en
+    key: name:en
+    type: string
+  - name: name_de
+    key: name:de
+    type: string
+  - name: tags
+    type: hstore_tags
+  - name: subclass
+    type: mapping_value
+  - name: mapping_key
+    type: mapping_key
+  - name: station
+    key: station
+    type: string
+  - name: funicular
+    key: funicular
+    type: string
+  - name: information
+    key: information
+    type: string
+  - name: uic_ref
+    key: uic_ref
+    type: string
+  - name: religion
+    key: religion
+    type: string
+  - name: level
+    key: level
+    type: integer
+  - name: indoor
+    key: indoor
+    type: bool
+  - name: layer
+    key: layer
+    type: integer
+  - name: sport
+    key: sport
+    type: string
+
+def_poi_mapping: &poi_mapping
+  aerialway: *poi_mapping_aerialway
+  amenity: *poi_mapping_amenity
+  barrier: *poi_mapping_barrier
+  highway: *poi_mapping_highway
+  historic: *poi_mapping_historic
+  leisure: *poi_mapping_leisure
+  railway: *poi_mapping_railway
+  shop: *poi_mapping_shop
+  sport: *poi_mapping_sport
+  tourism: *poi_mapping_tourism
+  waterway: *poi_mapping_waterway
+
+   
+
+#
+# Kartoza work
+#
+
+
 areas:
-  area_tags: [buildings, landuse, leisure, natural, aeroway]
-  linear_tags: [highway, barrier]
-generalized_tables:
-  landusages_gen0:
-    source: landusages_gen1
-    sql_filter: ST_Area(geometry)>500000.000000
-    tolerance: 200.0
-  landusages_gen1:
-    source: landusages
-    sql_filter: ST_Area(geometry)>50000.000000
-    tolerance: 50.0
-  roads_gen0:
-    source: roads_gen1
-    tolerance: 200.0
-  roads_gen1:
-    source: roads
-    sql_filter:
-      type IN (
-        'motorway', 'motorway_link', 'trunk', 'trunk_link', 'primary',
-        'primary_link', 'secondary', 'secondary_link', 'tertiary', 'tertiary_link')
-      OR class IN('railway')
-    tolerance: 50.0
-  waterareas_gen0:
-    source: waterareas_gen1
-    sql_filter: ST_Area(geometry)>500000.000000
-    tolerance: 200.0
-  waterareas_gen1:
-    source: waterareas
-    sql_filter: ST_Area(geometry)>50000.000000
-    tolerance: 50.0
-  waterways_gen0:
-    source: waterways_gen1
-    tolerance: 200
-  waterways_gen1:
-    source: waterways
-    tolerance: 50.0
+  area_tags: [buildings]
+  area_tags: [power]
+
 tables:
   admin:
     columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - name: type
+        type: mapping_value
+      - key: admin_level
+        name: admin_level
+        type: integer
+    filters:
+      require:
+        admin_level: [__any__]
+    mapping:
+      boundary:
+        - administrative
+    type: polygon
+  # etldoc: imposm3 -> osm_border_disp_relation
+  border_disp_relation:
+    columns:
+    - name: relation_id
+      type: id
     - name: osm_id
       type: id
+      from_member: true
     - name: geometry
       type: geometry
     - key: name
       name: name
       type: string
-    - name: type
-      type: mapping_value
+    - key: boundary
+      name: boundary
+      type: string
     - key: admin_level
       name: admin_level
       type: integer
-    mapping:
-      boundary:
-      - administrative
-    type: polygon
-  aeroways:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
+    - key: claimed_by
+      name: claimed_by
       type: string
-    - name: type
-      type: mapping_value
+    - key: disputed_by
+      name: disputed_by
+      type: string
+    - key: maritime
+      name: maritime
+      type: bool
+      from_member: true
+    filters:
+      require:
+        #admin_level: ['2']
+        admin_level: [__any__]
+        claimed_by: [__any__]  
     mapping:
-      aeroway:
-      - runway
-      - taxiway
+      type: [boundary]
+    type: relation_member
+  roads:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - key: ref
+        name: ref
+        type: string
+      - name: class
+        type: mapping_key
+      - name: type
+        type: mapping_value
+    filters:
+      reject:
+        area: ["yes"]
+    mapping:
+      highway:
+        - motorway
+        - motorway_link
+        - trunk
+        - trunk_link
+        - primary
+        - primary_link
+        - secondary
+        - secondary_link
+        - tertiary
+        - tertiary_link
+        - road
+        - path
+        - track
+        - service
+        - footway
+        - bridleway
+        - cycleway
+        - steps
+        - pedestrian
+        - living_street
+        - unclassified
+        - residential
+        - raceway
+      man_made:
+        - pier
+        - groyne
     type: linestring
-  amenities:
+  railways:
     columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - key: ref
+        name: ref
+        type: string
+      - name: class
+        type: mapping_key
+      - name: type
+        type: mapping_value
+    filters:
+      reject:
+        area: ["yes"]
     mapping:
-      amenity:
-      - university
-      - school
-      - library
-      - fuel
-      - hospital
-      - fire_station
-      - police
-      - townhall
-    type: point
-  barrierpoints:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    mapping:
-      barrier:
-      - block
-      - bollard
-      - cattle_grid
-      - chain
-      - cycle_barrier
-      - entrance
-      - horse_stile
-      - gate
-      - spikes
-      - lift_gate
-      - kissing_gate
-      - fence
-      - 'yes'
-      - wire_fence
-      - toll_booth
-      - stile
-    type: point
-  barrierways:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    mapping:
-      barrier:
-      - city_wall
-      - fence
-      - hedge
-      - retaining_wall
-      - wall
-      - bollard
-      - gate
-      - spikes
-      - lift_gate
-      - kissing_gate
-      - embankment
-      - 'yes'
-      - wire_fence
+      railway:
+        - rail
+        - miniature
+        - tram
+        - light_rail
+        - subway
+        - narrow_gauge
+        - preserved
+        - funicular
+        - monorail
+        - disused
     type: linestring
+  waterways_rivers:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - name: waterway
+        type: mapping_value
+      - key: width
+        name: width
+        type: string
+      - key: intermittent
+        name: permanent
+        type: string
+    filters:
+      require:
+        name: [__any__]
+    mapping:
+      waterway:
+        - river
+        - riverbank
+    type: linestring
+  waterways_streams:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - name: waterway
+        type: mapping_value
+      - key: width
+        name: width
+        type: string
+      - key: intermittent
+        name: permanent
+        type: string
+    mapping:
+      waterway:
+        - stream
+    type: linestring
+  waterways_manmade:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - name: waterway
+        type: mapping_value
+    mapping:
+      waterway:
+        - canal
+        - ditch
+        - drain
+    type: linestring
+  waterways_points:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - name: waterway
+        type: mapping_value
+    mapping:
+      waterway:
+        - waterfall
+        - rapids
+    type: point
+  places:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - name: place
+        type: mapping_value
+    filters:
+      require:
+        name : [__any__]
+    mapping:
+      place:
+        - locality
+        - hamlet
+        - village
+        - suburb
+        - town
+        - city
+        - county
+        - region
+        - state
+    type: point
   buildings:
     columns:
     - name: osm_id
@@ -160,408 +724,695 @@ tables:
       type: string
     - name: type
       type: mapping_value
+    filters:
+      reject:
+        building: ["no","none","No","yes"]
+        man_made: ["bridge"]
     mapping:
       building:
-      - __any__
-    type: polygon
-  housenumbers:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    - key: addr:street
-      name: addr:street
-      type: string
-    - key: addr:postcode
-      name: addr:postcode
-      type: string
-    - key: addr:city
-      name: addr:city
-      type: string
-    mapping:
-      addr:housenumber:
-      - __any__
-    type: point
-  housenumbers_interpolated:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    - key: addr:street
-      name: addr:street
-      type: string
-    - key: addr:postcode
-      name: addr:postcode
-      type: string
-    - key: addr:city
-      name: addr:city
-      type: string
-    - key: addr:inclusion
-      name: addr:inclusion
-      type: string
-    mapping:
-      addr:interpolation:
-      - __any__
-    type: linestring
-  landusages:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    - name: area
-      type: webmerc_area
-    - args:
-        values:
-        - land
-        - island
-        - heath
-        - railway
-        - industrial
-        - commercial
-        - retail
-        - residential
-        - quarry
-        - zoo
-        - vineyard
-        - orchard
-        - scrub
-        - hospital
-        - place_of_worship
-        - theatre
-        - cinema
-        - nature_reserve
-        - parking
-        - fuel
-        - baracks
-        - library
-        - college
+        - __any__
+      amenity:
         - school
         - university
-        - golf_course
-        - allotments
-        - common
+        - government
+        - fire
+        - police
+        - public building
+        - worship
+        - mall
+        - kindergarten
+        - college
+        - market
+      religion:
+        - __any__
+      use:
+        - government
+        - residential
+        - education
+        - place_of_worship
+        - school
+        - commercial
+        - industrial
+        - utility
+    type: polygon
+  power_polygons:
+    columns:
+    - {name: osm_id, type: id}
+    - {name: the_geom, type: geometry}
+    - {key: use, name: use, type: string}
+    - {key: name, name: name, type: string}
+    - {key: power, name: power, type: string}
+    - {key: substation, name: substation, type: string}
+    # The different voltages of the substation, ordered from highest to 
+    # lowest (ex: 400000;225000;63000). It is recommended to tag at least 
+    # the highest voltage of the substation.
+    - {key: voltage, name: voltage, type: string}
+    - {key: cables, name: cables, type: integer}
+    - {key: poles, name: poles, type: integer}
+    - {key: rating, name: rating, type: integer}
+    - {key: operator, name: operator, type: integer}
+    mapping:
+      power: [generator, plant]
+    type: polygon
+  power_transmission_lines:
+    columns:
+    - {name: osm_id, type: id}
+    - {name: the_geom, type: geometry}
+    - {name: type,type: mapping_value}
+    - {key: substation, name: substation, type: string}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+    - {key: voltage, name: voltage, type: string}
+    - {key: gas_insulated, name: gas_insulated, type: string}
+    - {key: ref, name: ref, type: string}
+    - {key: operator, name: operator, type: string}
+    - {key: location, name: location, type: string}
+    mapping:
+      type: [way]
+      power: [line, cable, minor_line]
+    type: linestring
+  substation_polygons:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: name, name: name, type: string}
+      - {key: power, name: power, type: mapping_value}
+      - {key: substation, name: substation, type: string}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: gas_insulated, name: gas_insulated, type: string}
+      - {key: ref, name: ref, type: string}
+      - {key: operator, name: operator, type: string}
+      - {key: location, name: location, type: string}
+    mapping:
+      power: [substation]
+    type: polygon
+  substation_points:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: name, name: name, type: string}
+      - {key: power, name: power, type: mapping_value}
+      - {key: substation, name: substation, type: string}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: gas_insulated, name: gas_insulated, type: string}
+      - {key: ref, name: ref, type: string}
+      - {key: operator, name: operator, type: string}
+      - {key: location, name: location, type: string}
+    mapping:
+      power: [substation]
+    type: point
+  switchgear:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: power, name: power, type: mapping_value}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: gas_insulated, name: gas_insulated, type: string}
+      - {key: location, name: location, type: string}
+    mapping:
+      power: [switchgear]
+    type: polygon
+  busbar:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: power, name: power, type: mapping_value}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: cables, name: cables, type: integer}
+      - {key: line, name: line, type: string}
+    mapping:
+      line: [busbar]
+    type: linestring
+  bay:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: power, name: power, type: mapping_value}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: cables, name: cables, type: integer}
+      - {key: line, name: line, type: string}
+    mapping:
+      line: [bay]
+    type: linestring
+  switch:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: power, name: power, type: mapping_value}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: cables, name: cables, type: integer}
+      - {key: gas_insulated, name: gas_insulated, type: string}
+      - {key: location, name: location, type: string}
+      - {key: switch, name: switch, type: string}
+      - {key: operator, name: operator, type: string}
+      - {key: ref, name: ref, type: string}
+    mapping:
+      power: [switch]
+    type: point
+  converter_points:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: power, name: power, type: mapping_value}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: converter, name: converter, type: string}
+      - {key: poles, name: poles, type: integer}
+      - {key: rating, name: rating, type: string}
+      - {key: location, name: location, type: string}
+      - {key: operator, name: operator, type: string}
+      - {key: phases, name: phases, type: string}
+      - {key: frequency, name: frequency, type: string}
+      - {key: name, name: name, type: string}
+      - {key: ref, name: ref, type: string}
+    mapping:
+      power: [converter]
+    type: point
+  converter_polygons:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: power, name: power, type: mapping_value}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: converter, name: converter, type: string}
+      - {key: poles, name: poles, type: integer}
+      - {key: rating, name: rating, type: string}
+      - {key: location, name: location, type: string}
+      - {key: operator, name: operator, type: string}
+      - {key: phases, name: phases, type: string}
+      - {key: frequency, name: frequency, type: string}
+      - {key: name, name: name, type: string}
+      - {key: ref, name: ref, type: string}
+    mapping:
+      power: [converter]
+    type: polygon
+  compensator_points:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: power, name: power, type: mapping_value}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: voltage, name: voltage, type: string}
+      - {key: compensator, name: compensator, type: string}
+      - {key: rating, name: rating, type: string}
+    mapping:
+      power: [compensator]
+    type: point
+  transformer:
+    columns:
+      - {name: osm_id, type: id}
+      - {name: the_geom, type: geometry}
+      - {key: power, name: power, type: mapping_value}
+      # The different voltages of the substation, ordered from highest to
+      # lowest (ex: 400000;225000;63000). It is recommended to tag at least
+      # the highest voltage of the substation.
+      - {key: "voltage:primary", name: "voltage:primary", type: string}
+      - {key: "voltage:secondary", name: "voltage:secondary", type: string}
+      - {key: "phases:primary", name: "phases:primary", type: string}
+      - {key: "phases:secondary", name: "phases:secondary", type: string}
+      - {key: "rating:primary", name: "rating:primary", type: string}
+      - {key: "rating:secondary", name: "rating:secondary", type: string}
+      - {key: "windings:primary", name: "windings:primary", type: string}
+      - {key: "windings:secondary", name: "windings:secondary", type: string}
+      - {key: transformer, name: transformer, type: string}
+      - {key: location, name: location, type: string}
+      - {key: frequency, name: frequency, type: string}
+    mapping:
+      power: [transformer]
+    type: point
+  landuse:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - key: landuse
+        name: landuse
+        type: string
+      - key: barrier
+        name: barrier
+        type: string
+      - key: landcover
+        name: landcover
+        type: string
+      - name: landuse_type
+        type: mapping_value
+    filters:
+      reject:
+        landuse: ['yes', 'BIO TECHNOLOGY TREE PROJECT', 'unused', 'Toyota parcking', 'other', 'Other', 'meadow', 'forest', 'grass', 'basin', 'PRIVATE', 'natural_reserve', 'natural']
+    mapping:
+      landuse:
+        - __any__
+      leisure:
+        - stadium
         - pitch
-        - sports_centre
-        - garden
-        - recreation_ground
-        - village_green
-        - wetland
-        - grass
-        - meadow
-        - wood
-        - farmland
-        - farm
-        - farmyard
-        - cemetery
-        - forest
-        - park
         - playground
-        - footway
-        - pedestrian
-      name: z_order
-      type: enumerate
+        - track
+      tourism:
+        - theme_park
+        - zoo
+      place:
+        - suburb
+        - quarter
+        - neighbourhood
+      waterway:
+        - dam
+    type: polygon
+  # etldoc: imposm3 -> osm_landcover_polygon
+  landcover:
+    columns:
+    - name: osm_id
+      type: id
+    - name: geometry
+      type: validated_geometry
+    - name: area
+      type: area
+    - name: subclass
+      type: mapping_value
+    - name: mapping_key
+      type: mapping_key
+    mapping:
+      natural:
+        - wood
+        - scrub
+        - heath
+        - grassland
+        - tundra
+        - shrubbery
+        - water
+        - wetland
+        - mud
+        - glacier
+        - reef
+        - bare rock
+        - scree
+        - shingle
+        - sand
+        - beach
+        - shoal
+      landuse:
+        - meadow
+        - forest
+        - grass
+        - basin
+      place:
+        - ocean
+        - sea
+    type: polygon 
+  parks:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      - key: name
+        name: name
+        type: string
+      - key: leisure
+        name: leisure
+        type: string
+      - key: landuse
+        name: landuse
+        type: string
+      - name: park_type
+        type: mapping_value
+    mapping:
+      landuse:
+        - natural_reserve
+      boundary:
+        - national_park
+        - protected_area
+      leisure:
+        - park
+        - nature_reserve
+    type: polygon
+  healthcare_facilities_points:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      # mandatory
+      - key: amenity
+        name: amenity
+        type: string
+      - key: healthcare
+        name: healthcare
+        type: string
+      - key: name
+        name: name
+        type: string
+      - key: operator
+        name: operator
+        type: string
+      - key: source
+        name: source
+        type: string
+      # others
+      - key: healthcare:speciality
+        name: speciality
+        type: string
+      - key: operator:type
+        name: operator_type
+        type: string
+      - key: contact:phone
+        name: contact_number
+        type: string
+      - key: operational_status
+        name: operational_status
+        type: string
+      - key: opening_hours
+        name: opening_hours
+        type: string
+      - key: beds
+        name: beds
+        type: string
+      - key: staff_count:doctors
+        name: staff_doctors
+        type: string
+      - key: staff_count:nurses
+        name: staff_nurses
+        type: string
+      - key: health_amenity:type
+        name: health_amenity_type
+        type: string
+      - key: dispensing
+        name: dispensing
+        type: string
+      - key: wheelchair
+        name: wheelchair
+        type: string
+      - key: emergency
+        name: emergency
+        type: string
+      - key: insurance:health
+        name: insurance
+        type: string
+      - key: water_source
+        name: water_source
+        type: string
+      - key: electricity
+        name: electricity
+        type: string
+      - key: is_in:health_area
+        name: is_in_health_area
+        type: string
+      - key: is_in:health_zone
+        name: is_in_health_zone
+        type: string
+      - key: url
+        name: url
+        type: string
+        # Address
+      - key: addr:housenumber
+        name: addr_housenumber
+        type: string
+      - key: addr:street
+        name: addr_street
+        type: string
+      - key: addr:postcode
+        name: addr_postcode
+        type: string
+      - key: addr:city
+        name: addr_city
+        type: string
+      - key: addr:country
+        name: addr_country
+        type: string
+      - name: health_care_facility_type
+        type: mapping_value
+    filters:
+      reject:
+        healthcare: ['yes', '*']
+    mapping:
+      amenity:
+        - clinic
+        - doctors
+        - dentist
+        - health_post
+        - hospital
+        - nursing_home
+        - pharmacy
+        - veterinary
+      social_facility:
+        - assisted_living
+        - day_care
+        - nursing_home
+      healthcare:
+        - __any__
+      emergency:
+        - ambulance_station
+        - emergency_ward_entrance
+      shop:
+        - chemist
+        - optician
+        - medical_supply
+    type: point
+  healthcare_facilities_polygons:
+    columns:
+      - name: osm_id
+        type: id
+      - name: geometry
+        type: geometry
+      # mandatory
+      - key: amenity
+        name: amenity
+        type: string
+      - key: healthcare
+        name: healthcare
+        type: string
+      - key: name
+        name: name
+        type: string
+      - key: operator
+        name: operator
+        type: string
+      - key: source
+        name: source
+        type: string
+      # others
+      - key: healthcare:speciality
+        name: speciality
+        type: string
+      - key: operator:type
+        name: operator_type
+        type: string
+      - key: contact:phone
+        name: contact_number
+        type: string
+      - key: operational_status
+        name: operational_status
+        type: string
+      - key: opening_hours
+        name: opening_hours
+        type: string
+      - key: beds
+        name: beds
+        type: string
+      - key: staff_count:doctors
+        name: staff_doctors
+        type: string
+      - key: staff_count:nurses
+        name: staff_nurses
+        type: string
+      - key: health_amenity:type
+        name: health_amenity_type
+        type: string
+      - key: dispensing
+        name: dispensing
+        type: string
+      - key: wheelchair
+        name: wheelchair
+        type: string
+      - key: emergency
+        name: emergency
+        type: string
+      - key: insurance:health
+        name: insurance
+        type: string
+      - key: water_source
+        name: water_source
+        type: string
+      - key: electricity
+        name: electricity
+        type: string
+      - key: is_in:health_area
+        name: is_in_health_area
+        type: string
+      - key: is_in:health_zone
+        name: is_in_health_zone
+        type: string
+      - key: url
+        name: url
+        type: string
+      # Address
+      - key: addr:housenumber
+        name: addr_housenumber
+        type: string
+      - key: addr:street
+        name: addr_street
+        type: string
+      - key: addr:postcode
+        name: addr_postcode
+        type: string
+      - key: addr:city
+        name: addr_city
+        type: string
+      - key: addr:country
+        name: addr_country
+        type: string
+      - name: health_care_facility_type
+        type: mapping_value
+    filters:
+      reject:
+        healthcare: ['yes', '*']
+    mapping:
+      amenity:
+        - clinic
+        - doctors
+        - dentist
+        - health_post
+        - hospital
+        - nursing_home
+        - pharmacy
+        - veterinary
+      social_facility:
+        - assisted_living
+        - day_care
+        - nursing_home
+      healthcare:
+        - __any__
+      emergency:
+        - ambulance_station
+        - emergency_ward_entrance
+      shop:
+        - chemist
+        - optician
+        - medical_supply
+    type: polygon    
+  #
+  # Next set of configs lifted from https://github.com/openmaptiles/openmaptiles/blob/master/layers/
+  #
+
+  # etldoc: imposm3 -> osm_aeroway_polygon
+  aeroway_polygons:
+    type: polygon
+    columns:
+    - *ref
+    - name: osm_id
+      type: id
+    - name: geometry
+      type: geometry
+    - name: aeroway
+      type: mapping_value
+    - name: area
+      type: area
+    mapping:
+      aeroway: *aeroway_polygon_mapping
+      "area:aeroway": *aeroway_polygon_mapping
+
+  # etldoc: imposm3 -> osm_aeroway_linestring
+  aeroway_linestring:
+    type: linestring
+    columns:
+    - *ref
+    - name: osm_id
+      type: id
+    - name: geometry
+      type: geometry
+    - name: aeroway
+      key: aeroway
+      type: string
     mapping:
       aeroway:
       - runway
       - taxiway
-      amenity:
-      - university
-      - school
-      - college
-      - library
-      - fuel
-      - parking
-      - cinema
-      - theatre
-      - place_of_worship
-      - hospital
-      barrier:
-      - hedge
-      highway:
-      - pedestrian
-      - footway
-      landuse:
-      - park
-      - forest
-      - residential
-      - retail
-      - commercial
-      - industrial
-      - railway
-      - cemetery
-      - grass
-      - farmyard
-      - farm
-      - farmland
-      - orchard
-      - vineyard
-      - wood
-      - meadow
-      - village_green
-      - recreation_ground
-      - allotments
-      - quarry
-      leisure:
-      - park
-      - garden
-      - playground
-      - golf_course
-      - sports_centre
-      - pitch
-      - stadium
-      - common
-      - nature_reserve
-      man_made:
-      - pier
-      military:
-      - barracks
-      natural:
-      - wood
-      - land
-      - scrub
-      - wetland
-      - heath
-      place:
-      - island
-      tourism:
-      - zoo
-    type: polygon
-  places:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    - args:
-        values:
-        - locality
-        - suburb
-        - hamlet
-        - village
-        - town
-        - city
-        - county
-        - region
-        - state
-        - country
-      name: z_order
-      type: enumerate
-    - key: population
-      name: population
-      type: integer
-    mapping:
-      place:
-      - country
-      - state
-      - region
-      - county
-      - city
-      - town
-      - village
-      - hamlet
-      - suburb
-      - locality
+      
+  # etldoc: imposm3 -> osm_aeroway_point
+  aeroway_points:
     type: point
-  roads:
     columns:
+    - *ref
     - name: osm_id
       type: id
     - name: geometry
       type: geometry
-    - name: type
-      type: mapping_value
-    - key: name
-      name: name
-      type: string
-    - key: tunnel
-      name: tunnel
-      type: boolint
-    - key: bridge
-      name: bridge
-      type: boolint
-    - key: oneway
-      name: oneway
-      type: direction
-    - key: ref
-      name: ref
-      type: string
-    - key: layer
-      name: z_order
-      type: wayzorder
-    - key: access
-      name: access
-      type: string
-    - key: service
-      name: service
-      type: string
-    - name: class
-      type: mapping_key
-    filters:
-      reject:
-        area: ["yes"]
-    mappings:
-      railway:
-        mapping:
-          railway:
-          - rail
-          - tram
-          - light_rail
-          - subway
-          - narrow_gauge
-          - preserved
-          - funicular
-          - monorail
-          - disused
-      roads:
-        mapping:
-          highway:
-          - motorway
-          - motorway_link
-          - trunk
-          - trunk_link
-          - primary
-          - primary_link
-          - secondary
-          - secondary_link
-          - tertiary
-          - tertiary_link
-          - road
-          - path
-          - track
-          - service
-          - footway
-          - bridleway
-          - cycleway
-          - steps
-          - pedestrian
-          - living_street
-          - unclassified
-          - residential
-          - raceway
-          man_made:
-          - pier
-          - groyne
-    type: linestring
-  transport_areas:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    mapping:
-      aeroway:
-      - aerodrome
-      - terminal
-      - helipad
-      - apron
-      railway:
-      - station
-      - platform
-    type: polygon
-  transport_points:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    - key: ref
-      name: ref
+    - name: aeroway
+      key: aeroway
       type: string
     mapping:
       aeroway:
       - aerodrome
-      - terminal
-      - helipad
-      - gate
-      highway:
-      - motorway_junction
-      - turning_circle
-      - bus_stop
-      railway:
-      - station
-      - halt
-      - tram_stop
-      - crossing
-      - level_crossing
-      - subway_entrance
+      - gate   
+  peak_points:
     type: point
-  waterareas:
     columns:
     - name: osm_id
       type: id
     - name: geometry
       type: geometry
-    - key: name
-      name: name
+    - name: name
+      key: name
       type: string
-    - name: type
-      type: mapping_value
-    - name: area
-      type: webmerc_area
+    - name: name_en
+      key: name:en
+      type: string
+    - name: name_de
+      key: name:de
+      type: string
+    - name: tags
+      type: hstore_tags
+    - name: ele
+      key: ele
+      type: string
+    - name: wikipedia
+      key: wikipedia
+      type: string
     mapping:
-      amenity:
-      - swimming_pool
-      landuse:
-      - basin
-      - reservoir
-      leisure:
-      - swimming_pool
       natural:
-      - water
-      waterway:
-      - riverbank
+      - peak
+      - volcano
+  # etldoc: imposm3 -> osm_poi_point
+  poi_points:
+    type: point
+    columns: *poi_fields
+    mapping: *poi_mapping
+
+  # etldoc: imposm3 -> osm_poi_polygon
+  poi_polygons:
     type: polygon
-  waterways:
-    columns:
-    - name: osm_id
-      type: id
-    - name: geometry
-      type: geometry
-    - key: name
-      name: name
-      type: string
-    - name: type
-      type: mapping_value
-    mapping:
-      barrier:
-      - ditch
-      waterway:
-      - stream
-      - river
-      - canal
-      - drain
-      - ditch
-    type: linestring
+    columns: *poi_fields
+    mapping: *poi_mapping
+
+
+
+  
