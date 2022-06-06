@@ -146,6 +146,20 @@ smaller extent. The CRS of the geojson should always be EPSG:4326.
 a simplified geometry is easier to process during the import. 
 Rather use the minimum bounding box for the area you intend to clip your dataset with.
 
+### QGIS project
+
+There is a default QGIS project provided in the `web/` folder, named `osm_mirror_qgis_project.qgz`. To be able to load the layers in this project correctly in QGIS, first run `make materialized_views` and `make  elevation` then set up your connection service file with the following parameters. The host parameter is where you have set up `docker-osm`:
+
+```
+[docker-osm]
+dbname=gis
+port=35432
+user=docker
+password=docker
+host=<host>
+sslmode=disable
+```
+
 ### QGIS Styles
 
 The database is provided with some default styles. These styles will be loaded
