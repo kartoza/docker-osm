@@ -19,6 +19,7 @@
  ***************************************************************************/
 """
 
+from collections import OrderedDict
 import sys
 import gzip
 from os import environ, listdir, mkdir
@@ -31,7 +32,6 @@ import xmltodict
 import yaml
 from dateutil import parser
 from psycopg2 import connect, OperationalError, ProgrammingError
-from xmltodict import OrderedDict
 
 
 class Enrich(object):
