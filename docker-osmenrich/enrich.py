@@ -174,7 +174,7 @@ class Enrich(object):
         """
         self.info('Load Mapping file data.')
         document = open(self.mapping_file, 'r')
-        mapping_data = yaml.load(document)
+        mapping_data = yaml.safe_load(document)
         try:
             for table, value in mapping_data['tables'].items():
                 try:
