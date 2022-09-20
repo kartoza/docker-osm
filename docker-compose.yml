@@ -20,7 +20,7 @@ services:
       - osm-postgis-data:/var/lib/postgresql
       - settings-data:/home/settings
     healthcheck:
-      test: "pg_isready -d ${POSTGRES_DBNAME}"
+      test: "chroot --userspec=101:102 / pg_isready -d ${POSTGRES_DBNAME}"
 
   imposm:
     image: kartoza/docker-osm:imposm-latest
