@@ -563,17 +563,19 @@ class Enrich(object):
                         raw_content = xmltodict.parse(file_content)
                         try:
                             modify_list = raw_content['osmChange']['modify']
-                            for list in modify_list:
-                                for key, value in list.items():
-                                    if type(value) != OrderedDict:
+                            for item in modify_list:
+                                for key, value in item.items():
+                                    if isinstance(value, (list, tuple)):
                                         for osm_data in value:
                                             self.enrich_database_from_osm_data(
                                                 osm_data, key
                                             )
-                                    else:
+                                    elif isinstance(value, OrderedDict):
                                         self.enrich_database_from_osm_data(
                                             value, key
                                         )
+                                    else:
+                                        pass
                         except KeyError:
                             self.info('%s can not be opened' % filename)
                         if not next_latest_diff_file or next_latest_diff_file < filename:
