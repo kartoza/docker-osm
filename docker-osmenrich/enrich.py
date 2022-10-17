@@ -19,8 +19,8 @@
  ***************************************************************************/
 """
 
-import sys
 import gzip
+import sys
 from os import environ, listdir, mkdir
 from os.path import join, exists, getsize
 from sys import exit, stderr
@@ -31,8 +31,6 @@ import xmltodict
 import yaml
 from dateutil import parser
 from psycopg2 import connect, OperationalError, ProgrammingError
-from xmltodict import OrderedDict
-
 
 class Enrich(object):
     mapping_type = {
@@ -174,7 +172,7 @@ class Enrich(object):
         """
         self.info('Load Mapping file data.')
         document = open(self.mapping_file, 'r')
-        mapping_data = yaml.load(document)
+        mapping_data = yaml.safe_load(document)
         try:
             for table, value in mapping_data['tables'].items():
                 try:
@@ -565,7 +563,7 @@ class Enrich(object):
                             modify_list = raw_content['osmChange']['modify']
                             for list in modify_list:
                                 for key, value in list.items():
-                                    if type(value) != OrderedDict:
+                                    if type(value) != dict:
                                         for osm_data in value:
                                             self.enrich_database_from_osm_data(
                                                 osm_data, key
