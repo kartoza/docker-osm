@@ -26,6 +26,7 @@ from os.path import join, exists, getsize
 from sys import exit, stderr
 from time import sleep
 from urllib import request
+from datetime import timezone
 
 import xmltodict
 import yaml
@@ -319,7 +320,7 @@ class Enrich(object):
         if osm_id and row:
             allow_updated = False
             osm_timestamp = self.check_data_on_dict(from_osm, '@timestamp')
-            osm_datetime = parser.parse(osm_timestamp).replace(tzinfo=None)
+            osm_datetime = parser.parse(osm_timestamp).replace(tzinfo=timezone.utc)
             if not row['changeset_timestamp'] or row['changeset_timestamp'] < osm_datetime:
                 allow_updated = True
             if allow_updated:
