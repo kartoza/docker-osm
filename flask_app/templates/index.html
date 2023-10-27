@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" rel="stylesheet">
+    <!--turfjs-->
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dark-theme.css') }}" rel="stylesheet">
+    <title>MapGPT</title>
+</head>
+<body class="dark-body">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg dark-nav">
+    <a class="navbar-brand" href="#">MapGPT</a>
+</nav>
+
+<!-- Map and Sidebar -->
+<div class="container-fluid dark-container">
+    <div class="row">
+        <!-- Map (assuming maplibre fills its container) -->
+        <div id="map" class="col-8 dark-map"></div>
+
+        <!-- Chat Sidebar -->
+        <div class="col-4 dark-sidebar">
+            <textarea id="chatbox" class="form-control dark-textarea my-3" rows="5" readonly></textarea>
+            <label for="layerDropdown" class="dark-label mx-2">Layers</label>
+            <select id="layerDropdown" class="dark-dropdown my-2">
+                <!-- Layers will be populated here -->
+            </select>
+            <input id="message" class="form-control dark-input my-2" placeholder="Type a message...">
+            <button id="send" class="btn dark-btn my-2">Send</button>
+            <!--button to clear the chatbox-->
+            <button id="clear" class="btn dark-btn my-2">Clear</button>
+            <!--audio recorder buttons-->
+            <div class="audio-recorder">
+                <button id="startRecord" class="btn dark-btn my-2">Start Recording</button>
+                <button id="stopRecord" class="btn dark-btn my-2">Stop Recording</button>
+            </div>
+            <!-- Example Commands -->
+            <div class="example-commands">
+                <p>Type or speak natural language commands to modify the stylesheet and navigate the map.</p>
+                <p>To modify the stylesheet, <b><i>select a layer on the map</i></b> or choose from the <b><i>Layers dropdown</i></b> before entering commands. 
+                    You can also type or speak something like 'select the buildings layer'. If a particular command seems to confuse the AI, try alternate phrasing.</p>
+                <p>Example commands:</p>
+                <ul>
+                    <li>Change color to green</li>
+                    <li>Turn layer off</li>
+                    <li>Go to Paris</li>
+                    <li>Where is the Statue of Liberty?</li>
+                    <li>Pan northeast 20km</li>
+                    <li>Change opacity to 50%</li>
+                    <li>line width 5.</li>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/response_agent.js') }}"></script>
+<script src="{{ url_for('static', filename='js/navigation_response_agent.js') }}"></script>
+<script src="{{ url_for('static', filename='js/style_response_agent.js') }}"></script>
+<script src="{{ url_for('static', filename='js/map_info_response_agent.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Turn the Start Recording button color to red when recording
+        const startRecordButton = document.getElementById('startRecord');
+        const stopRecordButton = document.getElementById('stopRecord');
+        if (startRecordButton) {
+            startRecordButton.addEventListener('click', function() {
+                //make the background color a maroonish color
+                startRecordButton.style.backgroundColor = '#800000';
+            });
+        }
+        if (stopRecordButton) {
+            stopRecordButton.addEventListener('click', function() {
+                startRecordButton.style.backgroundColor = '#444';
+            });
+        }
+
+
+        var map = new maplibregl.Map({
+            container: 'map',
+            style: "https://api.maptiler.com/maps/basic-v2/style.json?key=oDgyOnjlr9LH9XmQJNBF",
+            //style: "https://tileserver-rbt-agc-dev.apps.kubic.dev.ngaxc.net/styles/RBT-JOG-3395/style.json",
+            center: [24.6032, 56.8796],
+            zoom: 11
+        });
+
+        map.on('click', (e) => {
+            try {
+                //get the id of the layer that was clicked
+                var layerId = map.queryRenderedFeatures(e.point)[0].layer.id;
+                //set the value of the dropdown to the layer id
+                document.getElementById('layerDropdown').value = layerId;
+            } catch (error) {
+                //if no layer was clicked, then return
+                return;
+            }
+        });
+
+        // Add navigation control (zoom buttons)
+        map.addControl(new maplibregl.NavigationControl());
+
+        // Add our response agents
+        const navigationResponseAgent = new NavigationResponseAgent(map);
+        const styleResponseAgent = new StyleResponseAgent(map);
+        const mapInfoResponseAgent = new MapInfoResponseAgent(map);
+
+        const sendButton = document.getElementById('send');
+        const messageBox = document.getElementById('message');
+        const chatbox = document.getElementById('chatbox');
+        const clearButton = document.getElementById('clear');
+        
+        sendButton.addEventListener('click', function() {
+            submitMessage(map, messageBox.value);
+        });
+
+        clearButton.addEventListener('click', function() {
+            chatbox.value = "";
+        });
+
+        map.on('load', function () {
+            populateLayersDropdown();
+        });
+
+        document.getElementById("message").addEventListener("keyup", function(event) {
+            if (event.keyCode === 13) { // Enter key code
+                event.preventDefault(); // Prevent the default form submission
+                submitMessage(map, messageBox.value);
+            }
+        });
+
+        function populateLayersDropdown() {
+            const dropdown = document.getElementById('layerDropdown');
+            const layers = map.getStyle().layers;
+
+            layers.forEach(layer => {
+                const option = document.createElement('option');
+                option.value = layer.id;
+                option.innerText = layer.id;
+                dropdown.appendChild(option);
+            });
+        }
+
+        //function to submit a message to the chatbox
+        function submitMessage(map, userMessage) {
+
+            const chatbox = document.getElementById('chatbox');
+            const messageBox = document.getElementById('message');
+
+            if (userMessage.trim() === "") {
+                // Prevent sending empty messages
+                return;
+            }
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({message: userMessage})
+            })
+            .then(response => response.json())
+            .then(data => {
+                response_data = data.response;
+                console.log(data);
+                handle_choose_agent_response(userMessage, response_data);
+
+                return;
+
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                chatbox.value += "Error sending message.\n";
+            });
+            messageBox.value = "";
+        }
+
+        function handle_choose_agent_response(userMessage, response_data) {
+            const dropdown = document.getElementById('layerDropdown');
+            const chatbox = document.getElementById('chatbox');
+            console.log(`Response data in handle_choose_agent_response: ${JSON.stringify(response_data)}`);
+            if (response_data.agent_name === 'NavigationAgent') {
+                fetch('/navigate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({message: userMessage})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    response_data = data.response;
+                    console.log(data);
+                    chatbox.value = navigationResponseAgent.handleResponse(userMessage, response_data);
+                    return;
+
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    chatbox.value += "Error sending message.\n";
+                });
+            } else if (response_data.agent_name === 'StyleAgent') {
+                const layer_name = dropdown.options[dropdown.selectedIndex].text;
+                const bodytext = JSON.stringify({message: userMessage, layer_name: layer_name});
+                console.log(`Bodytext: ${bodytext}`);
+                fetch('/style', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({message: userMessage, layer_name: layer_name})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    response_data = data.response;
+                    console.log(data);
+                    chatbox.value = styleResponseAgent.handleResponse(userMessage, response_data);
+                    return;
+
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    chatbox.value += "Error sending message.\n";
+                });
+            } else if (response_data.agent_name === 'MapInfoAgent') {
+                const layer_names = get_layer_names(map);
+                fetch('/layer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({message: userMessage, layer_names: layer_names})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    response_data = data.response;
+                    console.log(response_data);
+                    chatbox.value = mapInfoResponseAgent.handleResponse(userMessage, response_data);
+                    return;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    chatbox.value += "Error sending message.\n";
+                });
+            } else {
+                console.log("Unknown agent");
+                chatbox.value = "I'm sorry, can you rephrase that?";
+            }
+
+            return getResponseString(userMessage, response_data);
+        }
+
+        // Add our recorder
+        const recorder = new Recorder(submitMessage, map);
+    });
+</script>
+
+</body>
+</html>

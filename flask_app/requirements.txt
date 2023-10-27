@@ -1,0 +1,6 @@
+Flask
+requests==2.26.0
+openai
+python-dotenv
+flask_cors
+psycopg2-binary

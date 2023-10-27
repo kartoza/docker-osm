@@ -1,0 +1,70 @@
+.dark-body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+.dark-nav {
+    background-color: #333;
+    color: #FFF;
+}
+
+.dark-nav .navbar-brand {
+    font-size: 24px;  /* Adjust the size as you prefer */
+    color: #FFFFFF !important;  /* Important flag can ensure this color takes precedence */
+}
+
+
+.dark-container {
+    background-color: #121212;
+}
+
+.dark-map {
+    background-color: #333;
+}
+
+.dark-sidebar {
+    background-color: #222;
+}
+
+.dark-textarea {
+    background-color: #333;
+    color: #696767;
+    padding: 10px;
+}
+
+.dark-dropdown {
+    width: 100%;  /* This will make the dropdown take up the full width */
+    background-color: #333;
+    color: #FFF;
+    padding: 10px;
+}
+
+.dark-dropdown, .dark-input {
+    background-color: #333;
+    color: #FFF;
+    padding: 10px;
+}
+
+.dark-btn {
+    background-color: #444;
+    color: #FFF;
+    padding: 10px 20px;
+}
+
+.dark-btn:hover {
+    background-color: #555;
+}
+
+.dark-label {
+    color: #FFF;  /* White text */
+    font-size: 16px;  /* Adjust size as needed */
+    margin-bottom: 5px;  /* Spacing from the dropdown */
+}
+
+
+.example-commands {
+    color: #FFF;  /* White text */
+    font-size: 16px;  /* Adjust size as needed */
+    margin-top: 10px;  /* Spacing from the buttons */
+}
+

@@ -8,6 +8,16 @@ volumes:
   cache:
 
 services:
+  cartobot:
+    build: ./flask_app
+    container_name: cartobot
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./flask_app/templates:/app/templates
+      - ./flask_app/uploads/audio:/app/uploads/audio
+    env_file: .env
+    restart: always
   db:
     image: kartoza/postgis:${POSTGRES_VERSION}
     environment:
