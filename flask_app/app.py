@@ -10,6 +10,8 @@ from agents.marshall_agent import MarshallAgent
 from agents.navigation_agent import NavigationAgent
 from agents.style_agent import StyleAgent
 from agents.map_info_agent import MapInfoAgent
+from agents.database_agent import DatabaseAgent
+from utils.database import Database
 import logging
 
 logging.basicConfig(level=logging.DEBUG,
@@ -29,6 +31,27 @@ navigation_agent = NavigationAgent(model_version=model_version)
 marshall_agent = MarshallAgent(model_version=model_version)
 style_agent = StyleAgent(model_version=model_version)
 map_info_agent = MapInfoAgent(model_version=model_version)
+
+def get_database_schema():
+    db = Database(
+        database=os.getenv("POSTGRES_DBNAME"),
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASS"),
+        host=os.getenv("POSTGRES_HOST"),
+        port=os.getenv("POSTGRES_PORT")
+    )
+    schema = db.get_database_info()
+    db.close()
+    return schema
+
+schema = get_database_schema()
+database_agent = DatabaseAgent(model_version=model_version, schema=schema)
+
+@app.route('/database', methods=['POST'])
+def database():
+    message = request.json.get('message', '')
+    logging.info(f"Received message: {message}") 
+    return jsonify(database_agent.listen(message))
 
 @app.route('/')
 def index():
@@ -75,9 +98,7 @@ def upload_audio():
     os.remove(os.path.join(UPLOAD_FOLDER, "user_audio.webm"))
     return message
 
-@app.route('/select', methods=['POST'])
-def select():
-    return None
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

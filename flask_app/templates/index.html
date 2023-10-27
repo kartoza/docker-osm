@@ -68,6 +68,7 @@
 <script src="{{ url_for('static', filename='js/navigation_response_agent.js') }}"></script>
 <script src="{{ url_for('static', filename='js/style_response_agent.js') }}"></script>
 <script src="{{ url_for('static', filename='js/map_info_response_agent.js') }}"></script>
+<script src="{{ url_for('static', filename='js/database_response_agent.js') }}"></script>
 <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
 <script>
 
@@ -116,6 +117,7 @@
         const navigationResponseAgent = new NavigationResponseAgent(map);
         const styleResponseAgent = new StyleResponseAgent(map);
         const mapInfoResponseAgent = new MapInfoResponseAgent(map);
+        const databaseResponseAgent = new DatabaseResponseAgent(map);
 
         const sendButton = document.getElementById('send');
         const messageBox = document.getElementById('message');
@@ -248,6 +250,26 @@
                     response_data = data.response;
                     console.log(response_data);
                     chatbox.value = mapInfoResponseAgent.handleResponse(userMessage, response_data);
+                    return;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    chatbox.value += "Error sending message.\n";
+                });
+            } else if (response_data.agent_name === 'DatabaseAgent') {
+                const layer_names = get_layer_names(map);
+                fetch('/database', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({message: userMessage})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    response_data = data.response;
+                    console.log(response_data);
+                    chatbox.value = databaseResponseAgent.handleResponse(userMessage, response_data);
                     return;
                 })
                 .catch(error => {

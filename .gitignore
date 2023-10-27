@@ -21,3 +21,8 @@ settings/clip/clip.shx
 .env
 
 *.webm
+
+# Geoserver
+/geoserver-data/*
+!/geoserver-data/workspaces
+!/geoserver-data/styles
