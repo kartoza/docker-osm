@@ -9,13 +9,13 @@
     <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
     <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/dark-theme.css') }}" rel="stylesheet">
-    <title>MapGPT</title>
+    <title>Docker-OSM-GPT</title>
 </head>
 <body class="dark-body">
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg dark-nav">
-    <a class="navbar-brand" href="#">MapGPT</a>
+    <a class="navbar-brand" href="#">Docker-OSM-GPT</a>
 </nav>
 
 <!-- Map and Sidebar -->
@@ -92,9 +92,10 @@
 
         var map = new maplibregl.Map({
             container: 'map',
-            style: "https://api.maptiler.com/maps/basic-v2/style.json?key=oDgyOnjlr9LH9XmQJNBF",
+            //style: "https://api.maptiler.com/maps/basic-v2/style.json?key=oDgyOnjlr9LH9XmQJNBF",
             //style: "https://tileserver-rbt-agc-dev.apps.kubic.dev.ngaxc.net/styles/RBT-JOG-3395/style.json",
-            center: [24.6032, 56.8796],
+            style: "https://api.maptiler.com/maps/satellite/style.json?key=oDgyOnjlr9LH9XmQJNBF",
+            center: [30.523333, 50.45],
             zoom: 11
         });
 
@@ -257,19 +258,20 @@
                     chatbox.value += "Error sending message.\n";
                 });
             } else if (response_data.agent_name === 'DatabaseAgent') {
-                const layer_names = get_layer_names(map);
-                fetch('/database', {
+                //get the bounding box of the current extent
+                const bbox = map.getBounds().toArray().flat();
+                fetch('/get_query', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({message: userMessage})
+                    body: JSON.stringify({message: userMessage, bbox: bbox})
                 })
                 .then(response => response.json())
                 .then(data => {
                     response_data = data.response;
                     console.log(response_data);
-                    chatbox.value = databaseResponseAgent.handleResponse(userMessage, response_data);
+                    chatbox.value += databaseResponseAgent.handleResponse(userMessage, response_data);
                     return;
                 })
                 .catch(error => {

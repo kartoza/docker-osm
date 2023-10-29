@@ -4,7 +4,7 @@ class NavigationResponseAgent extends ResponseAgent {
         if (response_data.name === "go_to_location") {
             this.map.flyTo({
                 center: [response_data.longitude, response_data.latitude],
-                zoom: 12
+                zoom: 16
             });
         } else if (response_data.name === "zoom_in") {
             this.map.zoomTo(this.map.getZoom() + response_data.zoom_levels);

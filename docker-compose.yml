@@ -21,23 +21,6 @@ services:
       db:
         condition: service_healthy
 
-  geoserver:
-    image: kartoza/geoserver:2.22.2
-    env_file: .env
-    volumes:
-      - ${PWD}:/opt/geoai
-    ports:
-      - 80:8080
-    restart: on-failure
-    depends_on:
-      db:
-        condition: service_healthy
-    healthcheck:
-      test: curl --fail -s http://localhost:8080/ || exit 1
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-
   db:
     image: kartoza/postgis:${POSTGRES_VERSION}
     environment:
@@ -118,3 +101,20 @@ services:
       - TIME=${TIME}
       - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
       - SSL_MODE=${SSL_MODE}
+
+  # geoserver:
+  #   image: kartoza/geoserver:2.22.2
+  #   env_file: .env
+  #   volumes:
+  #     - ${PWD}:/opt/geoai
+  #   ports:
+  #     - 80:8080
+  #   restart: on-failure
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: curl --fail -s http://localhost:8080/ || exit 1
+  #     interval: 1m30s
+  #     timeout: 10s
+  #     retries: 3
