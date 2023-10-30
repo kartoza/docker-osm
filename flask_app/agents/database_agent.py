@@ -122,12 +122,15 @@ class DatabaseAgent:
                 logger.info(f"Function args: {function_args}")
                 # determine the function to call
                 function_response = function_to_call(**function_args)
-                self.messages.append(response_message)
-                self.messages.append({
-                    "role": "function",
-                    "name": function_name,
-                    "content": function_response,
-                })
+
+                ### This is blowing up my context window
+                # self.messages.append(response_message)
+                # self.messages.append({
+                #     "role": "function",
+                #     "name": function_name,
+                #     "content": function_response,
+                # })
+                
                 return {"response": function_response}
             elif response_message.get("content"):
                 return {"response": response_message["content"]}

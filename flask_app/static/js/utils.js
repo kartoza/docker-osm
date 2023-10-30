@@ -41,3 +41,4 @@ function getResponseString(userMessage, response_data) {
     console.log(response_data)
     return "You: " + userMessage + "\nAI: " + JSON.stringify(response_data) + "\n" 
 }
+

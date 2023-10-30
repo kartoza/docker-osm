@@ -109,7 +109,7 @@ def geojson():
     results = db.execute(query)
     if not results:
         return jsonify({"type": "FeatureCollection", "features": []})
-    results = results[:1000]
+    #results = results[:5000]
     features = []
     for result in results:
         geometry_dict = json.loads(result[0])

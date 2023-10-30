@@ -16,6 +16,7 @@ class DatabaseResponseAgent extends ResponseAgent {
             .then(data => {
                 console.log("DatabaseResponseAgent data: ", data);
                 if (data.features.length > 0) {
+                    const geomType = this.getGeoJSONFeatureType(data);
                     //remove the previous layer
                     if (this.map.getLayer('query_result')) {
                         this.map.removeLayer('query_result');
@@ -25,16 +26,41 @@ class DatabaseResponseAgent extends ResponseAgent {
                         'type': 'geojson',
                         'data': data
                     });
-                    this.map.addLayer({
-                        "id": "query_result",
-                        "type": "fill",
-                        "source": "geojson",
-                        'layout': {},
-                        'paint': {
-                          'fill-color': '#ff0000',
-                          'fill-opacity': 0.4
-                        }
-                    });
+
+                    if (geomType === "Polygon") {
+                        this.map.addLayer({
+                            "id": "query_result",
+                            "type": "fill",
+                            "source": "geojson",
+                            'layout': {},
+                            'paint': {
+                              'fill-color': '#ff0000',
+                              'fill-opacity': 0.4
+                            }
+                        });
+                    } else if (geomType === "LineString") {
+                        this.map.addLayer({
+                            "id": "query_result",
+                            "type": "line",
+                            "source": "geojson",
+                            'layout': {},
+                            'paint': {
+                              'line-color': '#ff0000',
+                              'line-opacity': 0.4
+                            }
+                        });
+                    } else if (geomType === "Point") {
+                        this.map.addLayer({
+                            "id": "query_result",
+                            "type": "circle",
+                            "source": "geojson",
+                            'layout': {},
+                            'paint': {
+                              'circle-color': '#ff0000',
+                              'circle-opacity': 0.4
+                            }
+                        });
+                    }
 
                     //add the layer to the dropdown
                     const dropdown = document.getElementById('layerDropdown');
@@ -85,5 +111,16 @@ class DatabaseResponseAgent extends ResponseAgent {
             console.log(`DatabaseResponseAgent General Info response_data: ${JSON.stringify(response_data)}`);
         }
         return this.getResponseString(userMessage, response_data);
+    }
+    getGeoJSONFeatureType(geojson) {
+        const features = geojson.features || [];
+        
+        if (features.length === 0) {
+          return;
+        }
+        
+        const firstFeature = features[0];
+        const geometry = firstFeature.geometry || {};
+        return geometry.type || "Unknown";
     }
 }
