@@ -26,3 +26,5 @@ settings/clip/clip.shx
 /geoserver-data/*
 !/geoserver-data/workspaces
 !/geoserver-data/styles
+
+__pycache__

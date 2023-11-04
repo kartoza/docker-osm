@@ -47,11 +47,84 @@ def get_database_schema():
 schema = get_database_schema()
 database_agent = DatabaseAgent(model_version=model_version, schema=schema)
 
-@app.route('/database', methods=['POST'])
-def database():
+@app.route('/get_query', methods=['POST'])
+def get_query():
+    logging.info(f"Received request in /get_query route...: {request}")
     message = request.json.get('message', '')
-    logging.info(f"Received message: {message}") 
-    return jsonify(database_agent.listen(message))
+    bbox = request.json.get('bbox', '')
+    logging.info(f"Received message in /get_query route...: {message}")
+    logging.info(f"Received bbox in /get_query route...: {bbox}")
+    return jsonify(database_agent.listen(message, bbox))
+
+@app.route('/get_table_name', methods=['GET'])
+def get_table_name():
+    message = request.json.get('message', '')
+    table_names = [table['table_name'] for table in schema]
+    prefixed_message = f"Choose the most likely table the following text is referring to from this list:\m {table_names}.\n"
+    final_message = prefixed_message + message
+    logging.info(f"Received message in /get_table_name route...: {final_message}")
+    response = openai.ChatCompletion.create(
+        model=model_version,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that chooses a table name from a list. Only respond with the table name."},
+            {"role": "user", "content": final_message},
+        ],
+        temperature=0,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    logging.info(f"Response from OpenAI in /get_table_name route: {response}")
+    #response_message = response["choices"][0]["message"]
+    return response
+
+@app.route('/table', methods=['POST'])
+def table():
+    query = request.json.get('query', '')
+    logging.info(f"Received query in /table route...: {query}")
+    db = Database(
+        database=os.getenv("POSTGRES_DBNAME"),
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASS"),
+        host=os.getenv("POSTGRES_HOST"),
+        port=os.getenv("POSTGRES_PORT")
+    )
+    results = db.execute(query)
+    if not results:
+        return "No results"
+    return jsonify(results)
+
+@app.route('/geojson', methods=['POST'])
+def geojson():
+    query = request.json.get('query', '')
+    logging.info(f"Received message in /geojson route...: {query}")
+    db = Database(
+        database=os.getenv("POSTGRES_DBNAME"),
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASS"),
+        host=os.getenv("POSTGRES_HOST"),
+        port=os.getenv("POSTGRES_PORT")
+    )
+    results = db.execute(query)
+    if not results:
+        return jsonify({"type": "FeatureCollection", "features": []})
+    #results = results[:5000]
+    features = []
+    for result in results:
+        geometry_dict = json.loads(result[0])
+        feature = {
+            "type": "Feature",
+            "properties": {},
+            "geometry": geometry_dict
+        }
+        features.append(feature)
+    feature_collection = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+    db.close()
+    return jsonify(feature_collection)
 
 @app.route('/')
 def index():

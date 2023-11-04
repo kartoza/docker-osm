@@ -39,9 +39,10 @@ class Database:
         database_info = []
         for table_name in self.get_table_names():
             column_names = self.get_column_names(table_name)
-            database_info.append(
-                {"table_name": table_name, "column_names": column_names}
-            )
+            database_info.append({
+                "table_name": table_name,
+                "column_names": column_names
+            })
         return database_info
 
     def execute(self, query):
