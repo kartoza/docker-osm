@@ -1,3 +1,11 @@
+# Docker-OSM-GPT
+Creates a web app on top of kartoza Docker-OSM at localhost:5000 (by default) that 
+allows you to navigate the map and query spatial data from Docker-OSM using OpenAI. 
+Both text and voice commands are supported. You must grant microphone access to the page (only tested in Chrome).
+Copy the example .example.env file to .env and enter your OpenAI key and preferred model version.
+
+For getting Docker-OSM setup, see below.
+
 # Docker-OSM
 
 A docker compose project to setup an OSM PostGIS database with automatic
