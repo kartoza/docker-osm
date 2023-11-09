@@ -22,14 +22,14 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 model_version = os.getenv("OPENAI_MODEL_VERSION")
 UPLOAD_FOLDER = 'uploads/audio'
 
-navigation_agent = NavigationAgent(openai, model_version=model_version)
-marshall_agent = MarshallAgent(openai, model_version=model_version)
-style_agent = StyleAgent(openai, model_version=model_version)
-map_info_agent = MapInfoAgent(openai, model_version=model_version)
+navigation_agent = NavigationAgent(client, model_version=model_version)
+marshall_agent = MarshallAgent(client, model_version=model_version)
+style_agent = StyleAgent(client, model_version=model_version)
+map_info_agent = MapInfoAgent(client, model_version=model_version)
 
 def get_database_schema():
     db = Database(
@@ -44,15 +44,12 @@ def get_database_schema():
     return schema
 
 schema = get_database_schema()
-database_agent = DatabaseAgent(model_version=model_version, schema=schema)
+database_agent = DatabaseAgent(client, model_version=model_version, schema=schema)
 
 @app.route('/get_query', methods=['POST'])
 def get_query():
-    logging.info(f"Received request in /get_query route...: {request}")
     message = request.json.get('message', '')
     bbox = request.json.get('bbox', '')
-    logging.info(f"Received message in /get_query route...: {message}")
-    logging.info(f"Received bbox in /get_query route...: {bbox}")
     return jsonify(database_agent.listen(message, bbox))
 
 @app.route('/get_table_name', methods=['GET'])
@@ -62,17 +59,16 @@ def get_table_name():
     prefixed_message = f"Choose the most likely table the following text is referring to from this list:\m {table_names}.\n"
     final_message = prefixed_message + message
     logging.info(f"Received message in /get_table_name route...: {final_message}")
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model=model_version,
         messages=[
             {"role": "system", "content": "You are a helpful assistant that chooses a table name from a list. Only respond with the table name."},
             {"role": "user", "content": final_message},
         ],
         temperature=0,
-        max_tokens=256,
-        top_p=1,
+        max_tokens=32,
         frequency_penalty=0,
-        presence_penalty=0
+        presence_penalty=0,
     )
     logging.info(f"Response from OpenAI in /get_table_name route: {response}")
     #response_message = response["choices"][0]["message"]
@@ -163,7 +159,10 @@ def upload_audio():
     audio_file = request.files['audio']
     audio_file.save(os.path.join(UPLOAD_FOLDER, "user_audio.webm"))
     audio_file=open(os.path.join(UPLOAD_FOLDER, "user_audio.webm"), 'rb')
-    transcript = openai.audio.transcribe("whisper-1", audio_file)
+    transcript = client.audio.transcriptions.create(
+        model="whisper-1", 
+        file = audio_file
+    )
     logging.info(f"Received transcript: {transcript}")  
     message = transcript['text']
     #delete the audio

@@ -19,8 +19,8 @@ class StyleAgent:
     def set_visibility(self, layer_name, visibility):
         return {"name": "set_visibility", "layer_name": layer_name, "visibility": visibility}
     
-    def __init__(self, openai, model_version="gpt-3.5-turbo-0613"):
-        self.openai = openai
+    def __init__(self, client, model_version):
+        self.client = client
         self.model_version = model_version
         
         self.tools = style_function_descriptions
@@ -57,15 +57,13 @@ class StyleAgent:
 
         try:
             logger.info("Calling OpenAI API in StyleAgent...")
-            response = self.openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model_version,
                 messages=self.messages,
                 tools=self.tools,
                 tool_choice="auto", 
             )
-            logger.info(f"response in StyleAgent is: {response}")
             response_message = response.choices[0].message
-            logger.info(f"response_message in StyleAgent is: {response_message}")
             tool_calls = response_message.tool_calls
 
             if tool_calls:

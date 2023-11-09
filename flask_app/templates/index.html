@@ -270,7 +270,6 @@
                 .then(response => response.json())
                 .then(data => {
                     response_data = data.response;
-                    console.log(response_data);
                     chatbox.value += databaseResponseAgent.handleResponse(userMessage, response_data);
                     return;
                 })

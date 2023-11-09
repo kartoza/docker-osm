@@ -1,6 +1,6 @@
 import logging
 from .function_descriptions.navigation_function_descriptions import navigation_function_descriptions
-#import openai
+#import client
 import json
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,8 @@ class NavigationAgent:
     def zoom_out(self, zoom_levels=1):
         return {"name": "zoom_out", "zoom_levels": zoom_levels}
 
-    def __init__(self, openai, model_version="gpt-3.5-turbo-0613"):
-        self.openai = openai
+    def __init__(self, client, model_version):
+        self.client = client
         self.model_version = model_version
         self.messages = [
             {
@@ -42,7 +42,6 @@ class NavigationAgent:
             "zoom_out": self.zoom_out,
         }
         self.tools = navigation_function_descriptions
-        logger.info(f"self.tools in NavigationAgent is: {self.tools}")
 
     def listen(self, message):
         logging.info(f"In NavigationAgent...message is: {message}")
@@ -61,15 +60,13 @@ class NavigationAgent:
 
         try:
             logger.info("Calling OpenAI API in NavigationAgent...")
-            response = self.openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model_version,
                 messages=self.messages,
                 tools=self.tools,
                 tool_choice="auto", 
             )
-            logger.info(f"response in NavigationAgent is: {response}")
             response_message = response.choices[0].message
-            logger.info(f"response_message in NavigationAgent is: {response_message}")
             tool_calls = response_message.tool_calls
 
             if tool_calls:

@@ -1,14 +1,13 @@
 import json
-#import openai
 import logging
 
 logger = logging.getLogger(__name__)
 
 class MarshallAgent:
     """A Marshall agent that has function descriptions for choosing the appropriate agent for a specified task."""
-    def __init__(self, openai, model_version="gpt-3.5-turbo-0613"):
+    def __init__(self, client, model_version):
         self.model_version = model_version
-        self.openai = openai
+        self.client = client
         self.tools = [
             {
                 "type": "function",
@@ -31,7 +30,7 @@ class MarshallAgent:
         self.system_message = """You are a helpful assistant that decides which agent to use for a specified task.
                 
                 For tasks related to adding layers and other geospatial data to the map, use the DatabaseAgent.
-                Examples include 'add buildings to the map' and 'get landuse polygons within this extent'.
+                Examples include 'add buildings to the map', 'show industrial buildings', and 'get landuse polygons within this extent'.
 
                 For tasks that ask to change the style of a map, such as opacity, color, or line width, you will 
                 use the StyleAgent. Examples StyleAgent prompts include 'change color to green', 'opacity 45%'
@@ -52,18 +51,14 @@ class MarshallAgent:
         self.available_functions = {
             "choose_agent": self.choose_agent,
         }
-        self.logger = logging.getLogger(__name__)
+        
 
     def choose_agent(self, agent_name):
         return {"name": "choose_agent", "agent_name": agent_name}
 
     def listen(self, message):
-        self.logger.info(f"In MarshallAgent.listen()...message is: {message}")
+        logger.info(f"In MarshallAgent.listen()...message is: {message}")
         """Listen to a message from the user."""
-        
-        # # Remove the last item in self.messages. Our agent has no memory
-        # if len(self.messages) > 1:
-        #     self.messages.pop()
 
         self.messages.append({
             "role": "user",
@@ -75,7 +70,7 @@ class MarshallAgent:
         function_response = None
 
         try:
-            response = self.openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model_version,
                 messages=self.messages,
                 tools=self.tools,
@@ -100,11 +95,7 @@ class MarshallAgent:
                             "content": json.dumps(function_response),
                         }
                     )
-                # second_response = self.openai.chat.completions.create(
-                #     model=self.model_version,
-                #     messages=self.messages,
-                # )
-                logger.info(f"Sucessful MarallAgent task completion: {function_response}")
+                logger.info(f"Sucessful MarshallAgent task completion: {function_response}")
                 return {"response": function_response}
         
         except Exception as e:

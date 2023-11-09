@@ -34,6 +34,8 @@ services:
       - settings-data:/home/settings
     healthcheck:
       test: "pg_isready -d ${POSTGRES_DBNAME}"
+    ports:
+      - "${POSTGRES_PORT}:5432"
 
   imposm:
     image: kartoza/docker-osm:imposm-latest

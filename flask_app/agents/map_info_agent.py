@@ -10,8 +10,8 @@ class MapInfoAgent:
     def select_layer_name(self, layer_name):
         return {"name": "select_layer_name", "layer_name": layer_name}
 
-    def __init__(self, openai, model_version="gpt-3.5-turbo-0613"):
-        self.openai = openai
+    def __init__(self, client, model_version):
+        self.client = client
         self.model_version = model_version
         self.tools = map_info_function_descriptions
         self.messages = [
@@ -49,7 +49,7 @@ class MapInfoAgent:
         function_response = None
 
         try:
-            response = self.openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model_version,
                 messages=self.messages,
                 tools=self.tools,
@@ -80,25 +80,23 @@ class MapInfoAgent:
                 # what they meant. In general, it's pretty good at this unless there are multiple layers with similar names, in which case
                 # it just chooses one.
                 if function_name == "select_layer_name":
-                    logger.info(f"Sending layer name retrieval request to OpenAI...")
-                    prompt = f"Please select a layer name from the following list that is closest to the text '{function_response['layer_name']}': {str(layer_names)}\n Only state the layer name in your response."
-                    logger.info(f"Prompt to OpenAI: {prompt}")
+
+                    prompt = f"""Please select a layer name from the following list that is closest to the 
+                    text '{function_response['layer_name']}': {str(layer_names)}\n 
+                    Only state the layer name in your response."""
+
                     messages = [
                         {
                             "role": "user",
                             "content": prompt,
                         },
                     ]
-                    second_response = self.openai.chat.completions.create(
+                    second_response = self.client.chat.completions.create(
                         model=self.model_version,
                         messages=messages,
                     )
-                    logger.info(f"Second response from OpenAI in MapInfoAgent: {second_response}")
                     second_response_message = second_response.choices[0].message.content
-                    logger.info(f"Second response message from OpenAI in MapInfoAgent: {second_response_message}")
-                    logger.info(f"Function Response bofore setting the layer name: {function_response}")
                     function_response['layer_name'] = second_response_message
-                    logger.info(f"Function response after call to select a layername: {function_response}")
                 return {"response": function_response}
             elif response_message.get("content"):
                 return {"response": response_message["content"]}
