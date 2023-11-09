@@ -14,9 +14,11 @@ from agents.database_agent import DatabaseAgent
 from utils.database import Database
 import logging
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s',
+logging.basicConfig(level=logging.INFO,
+                    format='%(levelname)s %(name)s : %(message)s',
                     handlers=[logging.StreamHandler()])
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 app = Flask(__name__)
@@ -44,12 +46,15 @@ def get_database_schema():
     return schema
 
 schema = get_database_schema()
-database_agent = DatabaseAgent(client, model_version=model_version, schema=schema)
+database_agent = DatabaseAgent(client, model_version, schema=schema)
 
 @app.route('/get_query', methods=['POST'])
 def get_query():
+    logger.info("In get_query route...")
     message = request.json.get('message', '')
+    logger.info(f"Received message in /get_query route...: {message}")
     bbox = request.json.get('bbox', '')
+    logger.info(f"Received bbox in /get_query route...: {bbox}")
     return jsonify(database_agent.listen(message, bbox))
 
 @app.route('/get_table_name', methods=['GET'])
@@ -164,7 +169,7 @@ def upload_audio():
         file = audio_file
     )
     logging.info(f"Received transcript: {transcript}")  
-    message = transcript['text']
+    message = transcript.text
     #delete the audio
     os.remove(os.path.join(UPLOAD_FOLDER, "user_audio.webm"))
     return message

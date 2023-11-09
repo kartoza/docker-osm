@@ -1,8 +1,8 @@
 import json
 import logging
 import os
-import requests
 from utils.database import Database
+from .function_descriptions.database_function_descriptions import database_function_descriptions
 
 logger = logging.getLogger(__name__)
 
@@ -15,17 +15,18 @@ class DatabaseAgent:
     def get_table_from_database(self, query):
         return {"name": "get_table_from_database", "query": query}
 
-    def __init__(self, client, schema=None):
+    def __init__(self, client, model_version, schema=None):
         self.model_version = model_version
         self.client = client
         self.schema = schema
-        self.tools = self.get_function_descriptions()
+        self.tools = database_function_descriptions
         self.messages = [
             {
                 "role": "system",
                 "content": f"""You are a helpful assistant that answers questions about data in the 'osm' schema of a PostGIS database.
 
-                When responding with sql queries, you must use the 'osm' schema desgignation.
+                When responding with sql queries, you must use the 'osm' schema desgignation. If the user is requesting map features such as buildings, roads, or airports, 
+                you will construct a query that returns geojson.
 
                 An example prompt from the user is: "Add buildings to the map. Ensure the query is restricted to the following bbox: 30, 50, 31, 51"
 
@@ -65,6 +66,7 @@ class DatabaseAgent:
         )
         table_name = response.choices[0].message.content
         logger.info(f"table_name in DatabaseAgent is: {table_name}")
+        logger.info(f"bbox in DatabaseAgent is: {bbox}")
         map_context = f"Ensure the query is restricted to the following bbox: {bbox}"
         db = Database(
             database=os.getenv("POSTGRES_DBNAME"),
@@ -74,13 +76,13 @@ class DatabaseAgent:
             port=os.getenv("POSTGRES_PORT")
         )
         column_names = db.get_column_names(table_name)
-        logger.info(f"column_names in DatabaseAgent is: {column_names}")
         db.close()
         table_name_context = f"Generate your query using the following table name: {table_name} and the appropriate column names: {column_names}"
-
+        payload = message + "\n" + map_context + "\n" + table_name_context
+        logger.info(f"payload in DatabaseAgent is: {payload}")
         self.messages.append({
             "role": "user",
-            "content": message + "\n" + map_context + "\n" + table_name_context,
+            "content": payload,
         })
 
         # this will be the function gpt will call if it 
@@ -89,14 +91,16 @@ class DatabaseAgent:
 
         try:
             logger.info("Calling OpenAI API in DatabaseAgent...")
+
             response = self.client.chat.completions.create(
                 model=self.model_version,
                 messages=self.messages,
                 tools=self.tools,
                 tool_choice="auto", 
             )
+            logger.info(f"Response from OpenAI in DatabaseAgent: {response}")
             response_message = response.choices[0].message
-            logger.info(f"response_message in DatabaseAgent is: {response_message}")
+            logger.info(f"Response_message in DatabaseAgent is: {response_message}")
             tool_calls = response_message.tool_calls
 
             if tool_calls:
@@ -121,36 +125,4 @@ class DatabaseAgent:
             return {"error": "Failed to get response from OpenAI in NavigationAgent: " + str(e)}, 500
         return {"response": function_response}
 
-    def get_function_descriptions(self):
-        return [
-            {
-                "name": "get_geojson_from_database",
-                "description": """Retrieve geojson spatial data using PostGIS SQL.""",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": """SQL query to get geojson from the database.
-                            The query shall be returned in string format as a single command."""
-                        },
-                    },
-                    "required": ["query"],
-                }
-            },
-            {
-                "name": "get_table_from_database",
-                "description": """Retrieve a non-spatial table using PostgreSQL SQL.""",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": """SQL query that gets the answer to the user's question or task.
-                            The query shall be returned in string format as a single command.""",
-                        },
-                    },
-                    "required": ["query"],
-                },
-            },
-        ]
+    

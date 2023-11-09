@@ -26,13 +26,12 @@ class NavigationAgent:
         self.messages = [
             {
                 "role": "system",
-                "content": """You are a helpful assistant in navigating a maplibre map. When tasked to do something, you will call the appropriate function to navigate the map.
-
-                Examples tasks to go to a location include: 'Go to Tokyo', 'Where is the Eiffel Tower?', 'Navigate to New York City'
-
-                Examples tasks to pan in a direction include: 'Pan north 3 km', 'Pan ne 1 kilometer', 'Pan southwest', 'Pan east 2 kilometers', 'Pan south 5 kilometers', 'Pan west 1 kilometer', 'Pan northwest 2 kilometers', 'Pan southeast 3 kilometers'
-
-                Examples tasks to zoom in or zoom out include: 'Zoom in 2 zoom levels.', 'Zoom out 3', 'zoom out', 'zoom in', 'move closer', 'move in', 'get closer', 'move further away', 'get further away', 'back out', 'closer' """,
+                "content": """You are a helpful assistant in navigating a maplibre map. When tasked to do something, you will call the 
+                appropriate function to navigate the map. Examples tasks to go to a location include: 'Go to Tokyo', 'Where is the Eiffel Tower?', 
+                'Navigate to New York City'. Examples tasks to pan in a direction include: 'Pan north 3 km', 'Pan ne 1 kilometer', 'Pan southwest', 
+                'Pan east 2 kilometers', 'Pan south 5 kilometers', 'Pan west 1 kilometer', 'Pan northwest 2 kilometers', 'Pan southeast 3 kilometers'.
+                Examples tasks to zoom in or zoom out include: 'Zoom in 2 zoom levels.', 'Zoom out 3', 'zoom out', 'zoom in', 
+                'move closer', 'move in', 'get closer', 'move further away', 'get further away', 'back out', 'closer' """,
             },
         ]
         self.available_functions = {
@@ -67,6 +66,7 @@ class NavigationAgent:
                 tool_choice="auto", 
             )
             response_message = response.choices[0].message
+            logger.info(f"Response from OpenAI in NavigationAgent: {response_message}")
             tool_calls = response_message.tool_calls
 
             if tool_calls:
