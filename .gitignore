@@ -28,3 +28,6 @@ settings/clip/clip.shx
 !/geoserver-data/styles
 
 __pycache__
+
+notebooks/.ipynb_checkpoints
+

@@ -1,6 +1,6 @@
 import logging
 from .function_descriptions.navigation_function_descriptions import navigation_function_descriptions
-import openai
+#import openai
 import json
 
 logger = logging.getLogger(__name__)
@@ -20,9 +20,9 @@ class NavigationAgent:
     def zoom_out(self, zoom_levels=1):
         return {"name": "zoom_out", "zoom_levels": zoom_levels}
 
-    def __init__(self, model_version="gpt-3.5-turbo-0613"):
+    def __init__(self, openai, model_version="gpt-3.5-turbo-0613"):
+        self.openai = openai
         self.model_version = model_version
-        self.function_descriptions = navigation_function_descriptions
         self.messages = [
             {
                 "role": "system",
@@ -41,13 +41,15 @@ class NavigationAgent:
             "zoom_in": self.zoom_in,
             "zoom_out": self.zoom_out,
         }
+        self.tools = navigation_function_descriptions
+        logger.info(f"self.tools in NavigationAgent is: {self.tools}")
 
     def listen(self, message):
-        logging.info(f"In NavigationAgent.listen()...message is: {message}")
+        logging.info(f"In NavigationAgent...message is: {message}")
         """Listen to a message from the user."""
-        #remove the last item in self.messages
-        if len(self.messages) > 1:
-            self.messages.pop()
+        # #remove the last item in self.messages
+        # if len(self.messages) > 1:
+        #     self.messages.pop()
         self.messages.append({
             "role": "user",
             "content": message,
@@ -58,38 +60,35 @@ class NavigationAgent:
         function_response = None
 
         try:
-            response = openai.ChatCompletion.create(
+            logger.info("Calling OpenAI API in NavigationAgent...")
+            response = self.openai.chat.completions.create(
                 model=self.model_version,
                 messages=self.messages,
-                functions=self.function_descriptions,
-                function_call="auto",
-                temperature=0.1,
-                max_tokens=256,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0
+                tools=self.tools,
+                tool_choice="auto", 
             )
+            logger.info(f"response in NavigationAgent is: {response}")
+            response_message = response.choices[0].message
+            logger.info(f"response_message in NavigationAgent is: {response_message}")
+            tool_calls = response_message.tool_calls
 
-            response_message = response["choices"][0]["message"]
-
-            logging.info(f"Response from OpenAI in NavigationAgent: {response_message}")
-
-            if response_message.get("function_call"):
-                function_name = response_message["function_call"]["name"]
-                logging.info(f"Function name: {function_name}")
-                function_to_call = self.available_functions[function_name]
-                logging.info(f"Function to call: {function_to_call}")
-                function_args = json.loads(response_message["function_call"]["arguments"])
-                logging.info(f"Function args: {function_args}")
-                # determine the function to call
-                function_response = function_to_call(**function_args)
-                logging.info(f"Function response: {function_response}")
-
+            if tool_calls:
+                self.messages.append(response_message)
+                for tool_call in tool_calls:
+                    function_name = tool_call.function.name
+                    function_to_call = self.available_functions[function_name]
+                    function_args = json.loads(tool_call.function.arguments)
+                    function_response = function_to_call(**function_args)
+                    self.messages.append(
+                        {
+                            "tool_call_id": tool_call.id,
+                            "role": "tool",
+                            "name": function_name,
+                            "content": json.dumps(function_response),
+                        }
+                    )
+                logger.info("Sucessful NavigationAgent task completion.")
                 return {"response": function_response}
-            elif response_message.get("content"):
-                return {"response": response_message["content"]}
-            else:
-                return {"response": "I'm sorry, I don't understand."}
         
         except Exception as e:
             return {"error": "Failed to get response from OpenAI in NavigationAgent: " + str(e)}, 500

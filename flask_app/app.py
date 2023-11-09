@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 import os
-import openai
+from openai import OpenAI, NotFoundError
 from dotenv import load_dotenv
 import json
 import psycopg2
@@ -22,15 +22,14 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-#openai.organization = os.getenv("OPENAI_ORGANIZATION")
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 model_version = os.getenv("OPENAI_MODEL_VERSION")
 UPLOAD_FOLDER = 'uploads/audio'
 
-navigation_agent = NavigationAgent(model_version=model_version)
-marshall_agent = MarshallAgent(model_version=model_version)
-style_agent = StyleAgent(model_version=model_version)
-map_info_agent = MapInfoAgent(model_version=model_version)
+navigation_agent = NavigationAgent(openai, model_version=model_version)
+marshall_agent = MarshallAgent(openai, model_version=model_version)
+style_agent = StyleAgent(openai, model_version=model_version)
+map_info_agent = MapInfoAgent(openai, model_version=model_version)
 
 def get_database_schema():
     db = Database(
@@ -164,7 +163,7 @@ def upload_audio():
     audio_file = request.files['audio']
     audio_file.save(os.path.join(UPLOAD_FOLDER, "user_audio.webm"))
     audio_file=open(os.path.join(UPLOAD_FOLDER, "user_audio.webm"), 'rb')
-    transcript = openai.Audio.transcribe("whisper-1", audio_file)
+    transcript = openai.audio.transcribe("whisper-1", audio_file)
     logging.info(f"Received transcript: {transcript}")  
     message = transcript['text']
     #delete the audio

@@ -1,36 +1,34 @@
 import json
-import openai
+#import openai
 import logging
 
 logger = logging.getLogger(__name__)
 
 class MarshallAgent:
     """A Marshall agent that has function descriptions for choosing the appropriate agent for a specified task."""
-    def __init__(self, model_version="gpt-3.5-turbo-0613"):
+    def __init__(self, openai, model_version="gpt-3.5-turbo-0613"):
         self.model_version = model_version
-
-        #we only need one function description for this agent
-        function_description = {
-            "name": "choose_agent",
-            "description": """Chooses an appropriate agent for a given task.""",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "agent_name": {
-                        "type": "string",
-                        "description": "The name of the agent to choose. One of 'NavigationAgent', 'StyleAgent', 'MapInfoAgent', 'DatabaseAgent'.",
+        self.openai = openai
+        self.tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "choose_agent",
+                    "description": """Chooses an appropriate agent for a given task.""",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "agent_name": {
+                                "type": "string",
+                                "description": "The name of the agent to choose. One of 'NavigationAgent', 'StyleAgent', 'MapInfoAgent', 'DatabaseAgent'.",
+                            },
+                        },
+                        "required": ["agent_name"],
                     },
                 },
-                "required": ["agent_name"],
             },
-        }
-        
-        self.function_descriptions = [function_description]
-
-        self.messages = [
-            {
-                "role": "system",
-                "content": """You are a helpful assistant that decides which agent to use for a specified task.
+        ]
+        self.system_message = """You are a helpful assistant that decides which agent to use for a specified task.
                 
                 For tasks related to adding layers and other geospatial data to the map, use the DatabaseAgent.
                 Examples include 'add buildings to the map' and 'get landuse polygons within this extent'.
@@ -47,9 +45,13 @@ class MarshallAgent:
                 'go to Paris', 'show me the Statue of Liberty', and 'where is Houston, Texas?'
                 
                 If you can't find the appropriate agent, say that you didn't understand and ask 
-                for a more specific description of the task.""",
-            },
-        ]
+                for a more specific description of the task."""
+
+        #initialize the messages queue with the system message
+        self.messages = [{"role": "system", "content": self.system_message}]
+        self.available_functions = {
+            "choose_agent": self.choose_agent,
+        }
         self.logger = logging.getLogger(__name__)
 
     def choose_agent(self, agent_name):
@@ -59,9 +61,9 @@ class MarshallAgent:
         self.logger.info(f"In MarshallAgent.listen()...message is: {message}")
         """Listen to a message from the user."""
         
-        # Remove the last item in self.messages. Our agent has no memory
-        if len(self.messages) > 1:
-            self.messages.pop()
+        # # Remove the last item in self.messages. Our agent has no memory
+        # if len(self.messages) > 1:
+        #     self.messages.pop()
 
         self.messages.append({
             "role": "user",
@@ -73,34 +75,37 @@ class MarshallAgent:
         function_response = None
 
         try:
-            response = openai.ChatCompletion.create(
+            response = self.openai.chat.completions.create(
                 model=self.model_version,
                 messages=self.messages,
-                functions=self.function_descriptions,
-                function_call={"name": "choose_agent"},
-                temperature=0,
-                max_tokens=256,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0
+                tools=self.tools,
+                tool_choice={"type": "function", "function": {"name": "choose_agent"}}, 
             )
-            response_message = response["choices"][0]["message"]
+            response_message = response.choices[0].message
+            tool_calls = response_message.tool_calls
 
-            self.logger.info(f"Response from OpenAI in MarshallAgent: {response_message}")
-
-            if response_message.get("function_call"):
-                function_args = json.loads(response_message["function_call"]["arguments"])
-                self.logger.info(f"Function args: {function_args}")
-
-                # call choose agent
-                function_response = self.choose_agent(**function_args)
-                self.logger.info(f"Function response: {function_response}")
-
+            if tool_calls:
+                available_functions = self.available_functions
+                self.messages.append(response_message)
+                for tool_call in tool_calls:
+                    function_name = tool_call.function.name
+                    function_to_call = available_functions[function_name]
+                    function_args = json.loads(tool_call.function.arguments)
+                    function_response = function_to_call(**function_args)
+                    self.messages.append(
+                        {
+                            "tool_call_id": tool_call.id,
+                            "role": "tool",
+                            "name": function_name,
+                            "content": json.dumps(function_response),
+                        }
+                    )
+                # second_response = self.openai.chat.completions.create(
+                #     model=self.model_version,
+                #     messages=self.messages,
+                # )
+                logger.info(f"Sucessful MarallAgent task completion: {function_response}")
                 return {"response": function_response}
-            elif response_message.get("content"):
-                return {"response": response_message["content"]}
-            else:
-                return {"response": "I'm sorry, I don't understand."}
         
         except Exception as e:
             return {"error": "Failed to get response from OpenAI in MarshallAgent: " + str(e)}, 500
