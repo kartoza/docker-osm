@@ -19,6 +19,9 @@ class StyleAgent:
     def set_visibility(self, layer_name, visibility):
         return {"name": "set_visibility", "layer_name": layer_name, "visibility": visibility}
     
+    def select_layer_name(self, layer_name):
+        return {"name": "select_layer_name", "layer_name": layer_name}
+    
     def __init__(self, client, model_version):
         self.client = client
         self.model_version = model_version
@@ -40,15 +43,16 @@ class StyleAgent:
             "set_opacity": self.set_opacity,
             "set_width": self.set_width,
             "set_visibility": self.set_visibility,
+            "select_layer_name": self.select_layer_name,
         }
 
-    def listen(self, message):
+    def listen(self, message, layer_names):
         """Listen to a message from the user."""
         logging.info(f"In StyleAgent...message is: {message}")
-
+        final_message = f"""Available layer names are {layer_names}. Use the apprpriate layer name referenced below in your response:\n {message}"""
         self.messages.append({
             "role": "user",
-            "content": message,
+            "content": final_message,
         })
         
         # this will be the function gpt will call if it 

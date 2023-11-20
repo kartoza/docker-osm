@@ -29,6 +29,10 @@ class StyleResponseAgent extends ResponseAgent {
                     this.map.setLayoutProperty(response_data.layer_name, 'visibility', 'none');
                 }
                 break;
+            case "select_layer_name":
+                const dropdown = document.getElementById('layerDropdown');
+                dropdown.value = response_data.layer_name;
+                break;
             default:
                 break;
         }

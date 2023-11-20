@@ -215,31 +215,9 @@
                     chatbox.value += "Error sending message.\n";
                 });
             } else if (response_data.agent_name === 'StyleAgent') {
-                const layer_name = dropdown.options[dropdown.selectedIndex].text;
-                const bodytext = JSON.stringify({message: userMessage, layer_name: layer_name});
-                console.log(`Bodytext: ${bodytext}`);
+                //get the layer names from the style sheet
+                const layer_names = map.getStyle().layers.map(layer => layer.id);
                 fetch('/style', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({message: userMessage, layer_name: layer_name})
-                })
-                .then(response => response.json())
-                .then(data => {
-                    response_data = data.response;
-                    console.log(data);
-                    chatbox.value = styleResponseAgent.handleResponse(userMessage, response_data);
-                    return;
-
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    chatbox.value += "Error sending message.\n";
-                });
-            } else if (response_data.agent_name === 'MapInfoAgent') {
-                const layer_names = get_layer_names(map);
-                fetch('/layer', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -249,9 +227,10 @@
                 .then(response => response.json())
                 .then(data => {
                     response_data = data.response;
-                    console.log(response_data);
-                    chatbox.value = mapInfoResponseAgent.handleResponse(userMessage, response_data);
+                    console.log(data);
+                    chatbox.value = styleResponseAgent.handleResponse(userMessage, response_data);
                     return;
+
                 })
                 .catch(error => {
                     console.error("Error:", error);

@@ -152,12 +152,12 @@ def layer():
 @app.route('/style', methods=['POST'])
 def style():
     message = request.json.get('message', '')
-    layer_name = request.json.get('layer_name', '')
-    logging.debug(f"In style endpoint, layer_name is {layer_name} and message is {message}")  
-    prefixed_message = f"The following is referring to the layer {layer_name}."
-    prepended_message = prefixed_message + " " + message
-    logging.debug(f"In Style route, prepended_message is {prepended_message}")  
-    return jsonify(style_agent.listen(prepended_message))
+    layer_names = request.json.get('layer_names', '')
+    #logging.debug(f"In style endpoint, layer_name is {layer_names} and message is {message}")  
+    #prefixed_message = f"The following is referring to the layer {layer_name}."
+    #prepended_message = prefixed_message + " " + message
+    #logging.debug(f"In Style route, prepended_message is {prepended_message}")  
+    return jsonify(style_agent.listen(message, layer_names))
 
 @app.route('/audio', methods=['POST'])
 def upload_audio():

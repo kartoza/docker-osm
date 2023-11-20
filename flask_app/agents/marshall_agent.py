@@ -19,7 +19,7 @@ class MarshallAgent:
                         "properties": {
                             "agent_name": {
                                 "type": "string",
-                                "description": "The name of the agent to choose. One of 'NavigationAgent', 'StyleAgent', 'MapInfoAgent', 'DatabaseAgent'.",
+                                "description": "The name of the agent to choose. One of 'NavigationAgent', 'StyleAgent', 'DatabaseAgent'.",
                             },
                         },
                         "required": ["agent_name"],
@@ -32,16 +32,12 @@ class MarshallAgent:
                 For tasks related to adding layers and other geospatial data to the map, use the DatabaseAgent.
                 Examples include 'add buildings to the map', 'show industrial buildings', and 'get landuse polygons within this extent'.
 
-                For tasks that ask to change the style of a map, such as opacity, color, or line width, you will 
-                use the StyleAgent. Examples StyleAgent prompts include 'change color to green', 'opacity 45%'
-                and 'line width 4'. 
+                For tasks that change the style of a map, such as selecting a layer to style, changing the opacity, color, 
+                or line width of a layer, you will use the StyleAgent. Example StyleAgent prompts include 'change color to green', 
+                'select the buildings layer', 'opacity 45%', 'select water', and 'line width 4'. 
                 
-                For tasks related to getting the name of a layer, you will use the MapInfoAgent. 
-                Example MapInfoAgent prompts include 'select the water layer' and 'select buildings'. 
-                
-                For tasks that ask where something is, or task you with navigate the map, such as panning, zooming,
-                or flying to a location, you will use the NavigationAgent. Example NavigationAgent prompts include 
-                'go to Paris', 'show me the Statue of Liberty', and 'where is Houston, Texas?'
+                For tasks to navigate the map, such as panning, zooming, or flying to a location, you will use the NavigationAgent. 
+                Example NavigationAgent prompts include 'go to Paris', 'show me the Statue of Liberty', and 'fly to Houston, Texas'
                 
                 If you can't find the appropriate agent, say that you didn't understand and ask 
                 for a more specific description of the task."""
