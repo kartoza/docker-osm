@@ -427,7 +427,10 @@ class Enrich(object):
             self.info('%s' % e)
         return content
 
-    def process_empty_changeset_from_table(self, table_name, table_columns, osm_id_column, osm_type):
+    def process_empty_changeset_from_table(
+            self, table_name, table_columns,
+            osm_id_column, osm_type, extra_where=None
+    ):
         """ Processing all data from table
 
         :param table_name: Table source
@@ -444,6 +447,9 @@ class Enrich(object):
 
         :param osm_id_column: Column name of osm_id
         :type osm_id_column: str
+
+        :param extra_where: Other where for query
+        :type extra_where: str
         """
         # noinspection PyUnboundLocalVariable
         connection = self.create_connection()
@@ -451,8 +457,15 @@ class Enrich(object):
         row_batch = {}
         osm_ids = []
         try:
-            check_sql = ''' select * from %s."%s" WHERE "changeset_timestamp" 
-            IS NULL AND "osm_id" IS NOT NULL ORDER BY "osm_id" ''' % (self.default['DBSCHEMA_PRODUCTION'], table_name)
+            check_sql = f''' 
+                select * from {self.default['DBSCHEMA_PRODUCTION']}.{table_name} WHERE "changeset_timestamp" 
+                IS NULL AND "{osm_id_column}" IS NOT NULL 
+            '''
+            if extra_where:
+                check_sql += f' AND {extra_where} '
+
+            check_sql += f''' ORDER BY "{osm_id_column}"'''
+
             cursor.execute(check_sql)
             row = True
             while row:
@@ -461,10 +474,15 @@ class Enrich(object):
                 if row:
                     row = dict(zip(table_columns, row))
                     row_batch['%s' % row[osm_id_column]] = row
-                    osm_ids.append('%s' % row[osm_id_column])
-                    if len(osm_ids) == 30:
+                    try:
+                        osm_ids.append(f'{abs(row[osm_id_column])}')
+                    except:
+                        osm_ids.append('%s' % row[osm_id_column])
+                    if len(osm_ids) == 20:
                         self.update_osm_enrich_from_api_in_batch(
-                            osm_ids, osm_type, row_batch, table_name, osm_id_column)
+                            osm_ids, osm_type, row_batch, table_name,
+                            osm_id_column
+                        )
                         row_batch = {}
                         osm_ids = []
 
@@ -484,9 +502,22 @@ class Enrich(object):
             osm_type = table_data['osm_type']
             columns = table_data['columns']
             if osm_id_columnn is not None:
-                self.info('Checking data from table %s' % table)
-                self.process_empty_changeset_from_table(
-                    table, columns, osm_id_columnn, osm_type)
+                if osm_type == 'way':
+                    self.info('Checking data from table %s with type way' % table)
+                    self.process_empty_changeset_from_table(
+                        table, columns, osm_id_columnn, 'way',
+                        extra_where=f'"{osm_id_columnn}" > 0'
+                    )
+                    self.info('Checking data from table %s with type relation' % table)
+                    self.process_empty_changeset_from_table(
+                        table, columns, osm_id_columnn, 'relation',
+                        extra_where=f'"{osm_id_columnn}" < 0'
+                    )
+                else:
+                    self.info('Checking data from table %s' % table)
+                    self.process_empty_changeset_from_table(
+                        table, columns, osm_id_columnn, osm_type
+                    )
             else:
                 self.info('Does not know osm_id column for %s.' % table)
 

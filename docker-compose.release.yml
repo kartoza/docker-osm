@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  imposm:
+    build: docker-imposm
+    image: meomancer/docker-osm:imposm-1.0.0
+
+  osmupdate:
+    build: docker-osmupdate
+    image: meomancer/docker-osm:osmupdate-1.0.0
+
+  osmenrich:
+    build: docker-osmenrich
+    image: meomancer/docker-osm:osmenrich-1.0.0

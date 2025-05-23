@@ -18,6 +18,13 @@ build:
 	@echo "------------------------------------------------------------------"
 	@docker-compose build
 
+release-multiarch:
+	@echo
+	@echo "------------------------------------------------------------------"
+	@echo "Building images for production mode with release tag"
+	@echo "------------------------------------------------------------------"
+	docker buildx bake -f docker-compose.release.yml --set *.platform=linux/amd64,linux/arm64 --no-cache --push
+
 redeploy:
 	@echo
 	@echo "------------------------------------------------------------------"
