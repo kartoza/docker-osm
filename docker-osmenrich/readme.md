@@ -1,4 +1,7 @@
-# Docker-osmenrich
+# Docker OSMENRICH
+
+> Version 1.0.0
+
 Docker osm-enrich is the extension for docker osm to get the changeset of the osm data. 
 It will get the data from osm API and also get the update data from files that generated from docker-osmupdate
 

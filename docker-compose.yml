@@ -74,9 +74,6 @@ services:
 
   osmenrich:
     image: kartoza/docker-osm:osmenrich-latest
-    build:
-      context: ./docker-osmenrich
-      dockerfile: Dockerfile
     volumes:
       - settings-data:/home/settings
       - import_done:/home/import_done
